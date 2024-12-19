@@ -1,4 +1,4 @@
-use super::Theme;
+use crate::ui::material::Theme;
 use crate::{
     compose::Compose,
     ecs::spawn,
@@ -8,9 +8,9 @@ use crate::{
 use bevy_color::Color;
 use bevy_ui::{BackgroundColor, BorderColor, BorderRadius, BoxShadow, Node, UiRect, Val};
 
-/// Create a material UI radio button.
-pub fn radio_button<'a>() -> RadioButton<'a> {
-    RadioButton {
+/// Create a material UI switch.
+pub fn switch<'a>() -> Switch<'a> {
+    Switch {
         is_enabled: true,
         inner_radius: 10.,
         outer_radius: 20.,
@@ -23,7 +23,7 @@ pub fn radio_button<'a>() -> RadioButton<'a> {
 /// Material UI radio button.
 #[derive(Clone, Debug, Data)]
 #[actuate(path = "crate")]
-pub struct RadioButton<'a> {
+pub struct Switch<'a> {
     is_enabled: bool,
     inner_radius: f32,
     outer_radius: f32,
@@ -32,7 +32,7 @@ pub struct RadioButton<'a> {
     modifier: Modifier<'a>,
 }
 
-impl RadioButton<'_> {
+impl Switch<'_> {
     /// Set the enabled state of this radio button.
     pub fn is_enabled(mut self, is_enabled: bool) -> Self {
         self.is_enabled = is_enabled;
@@ -64,21 +64,29 @@ impl RadioButton<'_> {
     }
 }
 
-impl Compose for RadioButton<'_> {
+impl Compose for Switch<'_> {
     fn compose(cx: Scope<Self>) -> impl Compose {
         let theme = use_context::<Theme>(&cx).cloned().unwrap_or_default();
 
-        let size = Val::Px(cx.me().outer_radius * 2.);
-        let inner_size = Val::Px(cx.me().inner_radius * 2.);
-        let padding = Val::Px((cx.me().outer_radius - cx.me().inner_radius) - 2.);
-        let padding_rect = UiRect::all(padding);
+        let height = Val::Px(cx.me().outer_radius * 2.);
+        let width = Val::Px(cx.me().outer_radius * 3.);
+        let knob_size = Val::Px(cx.me().inner_radius * 2.);
+        let padding = (cx.me().outer_radius - cx.me().inner_radius) - 2.;
+        let padding_right = padding + 2. * cx.me().inner_radius;
+        let mut padding_rect = UiRect::all(Val::Px(padding));
+        padding_rect.right = Val::Px(padding_right);
+        let offset_left_val = if cx.me().is_enabled {
+            Val::Percent(0.)
+        } else {
+            Val::Percent(100.)
+        };
 
         cx.me()
             .modifier
             .apply(spawn((
                 Node {
-                    width: size,
-                    height: size,
+                    width,
+                    height,
                     border: UiRect::all(Val::Px(cx.me().border_width)),
                     padding: padding_rect,
                     ..Default::default()
@@ -93,24 +101,21 @@ impl Compose for RadioButton<'_> {
                     blur_radius: Val::Px(3. * cx.me().elevation),
                 },
             )))
-            .content(if cx.me().is_enabled {
-                Some(spawn((
-                    Node {
-                        width: inner_size,
-                        height: inner_size,
+            .content(Some(spawn((
+                Node {
+                    width: knob_size,
+                    height: knob_size,
+                    left: offset_left_val,
 
-                        ..Default::default()
-                    },
-                    BackgroundColor(theme.colors.primary),
-                    BorderRadius::MAX,
-                )))
-            } else {
-                None
-            })
+                    ..Default::default()
+                },
+                BackgroundColor(theme.colors.primary),
+                BorderRadius::MAX,
+            ))))
     }
 }
 
-impl<'a> Modify<'a> for RadioButton<'a> {
+impl<'a> Modify<'a> for Switch<'a> {
     fn modifier(&mut self) -> &mut Modifier<'a> {
         &mut self.modifier
     }

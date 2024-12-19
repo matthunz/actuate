@@ -53,7 +53,7 @@ pub struct ActuatePlugin;
 
 impl Plugin for ActuatePlugin {
     fn build(&self, app: &mut App) {
-        let rt = Runtime {
+        let rt = BevyRuntime {
             composers: RefCell::new(HashMap::new()),
         };
 
@@ -102,7 +102,7 @@ struct RuntimeComposer {
     composer: Composer,
 }
 
-struct Runtime {
+struct BevyRuntime {
     composers: RefCell<HashMap<Entity, RuntimeComposer>>,
 }
 
@@ -161,7 +161,7 @@ where
                 let content = composition.content.take().unwrap();
                 let target = composition.target.unwrap_or(entity);
 
-                let rt = world.non_send_resource_mut::<Runtime>();
+                let rt = world.non_send_resource_mut::<BevyRuntime>();
 
                 rt.composers.borrow_mut().insert(
                     entity,
@@ -237,7 +237,7 @@ fn compose(world: &mut World) {
         .get_resource::<EventLoopProxyWrapper<WakeUp>>()
         .unwrap())
     .clone();
-    let rt = &mut *world.non_send_resource_mut::<Runtime>();
+    let rt = &mut *world.non_send_resource_mut::<BevyRuntime>();
     let mut composers = rt.composers.borrow_mut();
     for rt_composer in composers.values_mut() {
         let waker = Waker::from(Arc::new(RuntimeWaker {

@@ -13,6 +13,12 @@ pub use self::radio::{radio_button, RadioButton};
 mod ui;
 pub use self::ui::{material_ui, MaterialUi};
 
+mod switch;
+pub use self::switch::{switch, Switch};
+
+// mod slider;
+// pub use self::slider::{slider, Slider};
+
 /// Text composables.
 pub mod text;
 

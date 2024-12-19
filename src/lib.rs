@@ -158,8 +158,8 @@ pub mod prelude {
     #[cfg(feature = "material")]
     #[cfg_attr(docsrs, doc(cfg(feature = "material")))]
     pub use crate::ui::material::{
-        button, container, material_ui, radio_button, text, Button, MaterialUi, RadioButton, Theme,
-        TypographyKind, TypographyStyleKind,
+        button, container, material_ui, radio_button, switch, text, Button, MaterialUi,
+        RadioButton, Switch, Theme, TypographyKind, TypographyStyleKind,
     };
 }
 
@@ -403,7 +403,7 @@ impl<'a, T> Signal<'a, T> {
             ptr: me.value as *const _ as _,
             map_fn: f as _,
             deref_fn: |ptr, g| {
-                // Safety: `f` is guranteed to be a valid function pointer.
+                // Safety: `f` is guaranteed to be a valid function pointer.
                 unsafe {
                     let g: fn(&T) -> &U = mem::transmute(g);
                     g(&*(ptr as *const T))
@@ -494,7 +494,7 @@ impl<'a, T: 'static> SignalMut<'a, T> {
         }
     }
 
-    /// Queue an update to this value wtihout triggering an update.
+    /// Queue an update to this value without triggering an update.
     pub fn with(me: Self, f: impl FnOnce(&mut T) + Send + 'static) {
         let cell = UnsafeWrap(Some(f));
         let ptr = UnsafeWrap(me.ptr);
