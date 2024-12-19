@@ -7,12 +7,15 @@ use crate::{
     use_context,
 };
 use bevy_color::Color;
-use bevy_ui::{BackgroundColor, BorderColor, BorderRadius, BoxShadow, Node, UiRect, Val};
+use bevy_ui::{
+    AlignItems, BackgroundColor, BorderColor, BorderRadius, BoxShadow, JustifyContent, Node,
+    UiRect, Val,
+};
 
-/// Create a material UI radio button.
-pub fn radio_button<'a>() -> RadioButton<'a> {
-    RadioButton {
-        is_enabled: true,
+/// Create a material UI switch.
+pub fn switch<'a>() -> Switch<'a> {
+    Switch {
+        is_checked: false,
         inner_radius: 10.,
         outer_radius: 20.,
         border_width: 2.,
@@ -21,11 +24,11 @@ pub fn radio_button<'a>() -> RadioButton<'a> {
     }
 }
 
-/// Material UI radio button.
+/// Material UI switch.
 #[derive(Clone, Debug, Data)]
 #[actuate(path = "crate")]
-pub struct RadioButton<'a> {
-    is_enabled: bool,
+pub struct Switch<'a> {
+    is_checked: bool,
     inner_radius: f32,
     outer_radius: f32,
     border_width: f32,
@@ -33,55 +36,63 @@ pub struct RadioButton<'a> {
     modifier: Modifier<'a>,
 }
 
-impl RadioButton<'_> {
-    /// Set the enabled state of this radio button.
-    pub fn is_enabled(mut self, is_enabled: bool) -> Self {
-        self.is_enabled = is_enabled;
+impl Switch<'_> {
+    /// Set the checked state of this switch.
+    ///
+    /// When `true`, the knob is aligned to the end of the track.
+    pub fn is_checked(mut self, is_checked: bool) -> Self {
+        self.is_checked = is_checked;
         self
     }
 
-    /// Set the inner radius of this radio button.
+    /// Set the knob radius of this switch.
     pub fn inner_radius(mut self, inner_radius: f32) -> Self {
         self.inner_radius = inner_radius;
         self
     }
 
-    /// Set the outer radius of this radio button.
+    /// Set the track radius of this switch.
     pub fn outer_radius(mut self, outer_radius: f32) -> Self {
         self.outer_radius = outer_radius;
         self
     }
 
-    /// Set the border width of this radio button.
+    /// Set the border width of this switch.
     pub fn border_width(mut self, border_width: f32) -> Self {
         self.border_width = border_width;
         self
     }
 
-    /// Set the elevation of this radio button.
+    /// Set the elevation of this switch.
     pub fn elevation(mut self, elevation: f32) -> Self {
         self.elevation = elevation;
         self
     }
 }
 
-impl Compose for RadioButton<'_> {
+impl Compose for Switch<'_> {
     fn compose(cx: Scope<Self>) -> impl Compose {
         let theme = use_context::<Theme>(&cx).cloned().unwrap_or_default();
 
-        let size = Val::Px(cx.me().outer_radius * 2.);
-        let inner_size = Val::Px(cx.me().inner_radius * 2.);
+        let height = Val::Px(cx.me().outer_radius * 2.);
+        let width = Val::Px(cx.me().outer_radius * 3.);
+        let knob_size = Val::Px(cx.me().inner_radius * 2.);
         let padding = Val::Px((cx.me().outer_radius - cx.me().inner_radius) - 2.);
-        let padding_rect = UiRect::all(padding);
 
         cx.me()
             .modifier
             .apply(spawn((
                 Node {
-                    width: size,
-                    height: size,
+                    width,
+                    height,
                     border: UiRect::all(Val::Px(cx.me().border_width)),
-                    padding: padding_rect,
+                    padding: UiRect::all(padding),
+                    align_items: AlignItems::Center,
+                    justify_content: if cx.me().is_checked {
+                        JustifyContent::FlexEnd
+                    } else {
+                        JustifyContent::FlexStart
+                    },
                     border_radius: BorderRadius::MAX,
                     ..Default::default()
                 },
@@ -94,23 +105,19 @@ impl Compose for RadioButton<'_> {
                     Val::Px(3. * cx.me().elevation),
                 ),
             )))
-            .content(if cx.me().is_enabled {
-                Some(spawn((
-                    Node {
-                        width: inner_size,
-                        height: inner_size,
-                        border_radius: BorderRadius::MAX,
-                        ..Default::default()
-                    },
-                    BackgroundColor(theme.colors.primary),
-                )))
-            } else {
-                None
-            })
+            .content(spawn((
+                Node {
+                    width: knob_size,
+                    height: knob_size,
+                    border_radius: BorderRadius::MAX,
+                    ..Default::default()
+                },
+                BackgroundColor(theme.colors.primary),
+            )))
     }
 }
 
-impl<'a> Modify<'a> for RadioButton<'a> {
+impl<'a> Modify<'a> for Switch<'a> {
     fn modifier(&mut self) -> &mut Modifier<'a> {
         &mut self.modifier
     }

@@ -10,6 +10,9 @@ pub use self::container::{Container, container};
 mod radio;
 pub use self::radio::{RadioButton, radio_button};
 
+mod switch;
+pub use self::switch::{Switch, switch};
+
 mod ui;
 pub use self::ui::{MaterialUi, material_ui};
 

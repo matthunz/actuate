@@ -74,3 +74,7 @@ required-features = ["material"]
 [[example]]
 name = "timer"
 required-features = ["ecs"]
+
+[[example]]
+name = "widget_gallery"
+required-features = ["material"]
