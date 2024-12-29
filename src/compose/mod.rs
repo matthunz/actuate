@@ -286,6 +286,22 @@ impl_tuples!(T1:0, T2:1, T3:2, T4:3, T5:4, T6:5);
 impl_tuples!(T1:0, T2:1, T3:2, T4:3, T5:4, T6:5, T7:6);
 impl_tuples!(T1:0, T2:1, T3:2, T4:3, T5:4, T6:5, T7:6, T8:7);
 
+impl<C> Compose for Vec<C>
+where
+    C: Compose,
+{
+    fn compose(cx: Scope<Self>) -> impl Compose {
+        for (idx, item) in cx.me().iter().enumerate() {
+            let ptr: *const dyn AnyCompose =
+                unsafe { mem::transmute(item as *const dyn AnyCompose) };
+            let (key, _) = use_node(&cx, ComposePtr::Ptr(ptr), idx);
+
+            let rt = Runtime::current();
+            rt.queue(key);
+        }
+    }
+}
+
 fn use_node(cx: ScopeState, compose_ptr: ComposePtr, child_idx: usize) -> (DefaultKey, &Rc<Node>) {
     let mut compose_ptr_cell = Some(compose_ptr);
 
