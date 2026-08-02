@@ -28,17 +28,17 @@ members = [
 [dependencies]
 actuate-macros = { version = "0.2.0", path = "macros" }
 ahash = { version = "0.8.11", default-features = false }
-bevy_app = { version = "0.17.3", optional = true }
-bevy_color = { version = "0.17.3", optional = true }
-bevy_ecs = { version = "0.17.3", optional = true }
-bevy_input = { version = "0.17.3", optional = true }
-bevy_math = { version = "0.17.3", optional = true }
-bevy_picking = { version = "0.17.3", optional = true }
-bevy_text = { version = "0.17.3", optional = true }
-bevy_time = { version = "0.17.3", optional = true }
-bevy_ui = { version = "0.17.3", optional = true }
-bevy_utils = { version = "0.17.3", optional = true }
-bevy_winit = { version = "0.17.3", optional = true }
+bevy_app = { version = "0.19.0", optional = true }
+bevy_color = { version = "0.19.0", optional = true }
+bevy_ecs = { version = "0.19.0", optional = true }
+bevy_input = { version = "0.19.0", optional = true }
+bevy_math = { version = "0.19.0", optional = true }
+bevy_picking = { version = "0.19.0", optional = true }
+bevy_text = { version = "0.19.0", optional = true }
+bevy_time = { version = "0.19.0", optional = true }
+bevy_ui = { version = "0.19.0", optional = true }
+bevy_utils = { version = "0.19.0", optional = true }
+bevy_winit = { version = "0.19.0", optional = true }
 crossbeam-queue = { version = "0.3.11", default-features = false, features = ["alloc"] }
 futures = "0.3.31"
 hashbrown = "0.15.2"
@@ -49,7 +49,7 @@ tokio = { version = "1.41.1", features = ["sync"], optional = true }
 typeid = "1.0.2"
 
 [dev-dependencies]
-bevy = { version = "0.17.3" }
+bevy = { version = "0.19.0" }
 reqwest = { version = "0.12.9", features = ["json"] }
 serde = { version = "1.0.215", features = ["derive"] }
 tracing-subscriber = "0.3.18"

@@ -5,7 +5,7 @@ use crate::{
     use_context,
 };
 use actuate_macros::Data;
-use bevy_text::{TextColor, TextFont};
+use bevy_text::{FontSize, TextColor, TextFont};
 use bevy_ui::prelude::Text as UiText;
 
 /// Create a material UI text body.
@@ -72,7 +72,7 @@ impl Compose for Text<'_> {
             UiText::new(cx.me().content.clone()),
             TextColor(theme.colors.text),
             TextFont {
-                font_size: style.font_size,
+                font_size: FontSize::Px(style.font_size),
                 ..Default::default()
             },
         ))

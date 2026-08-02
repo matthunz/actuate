@@ -12,7 +12,7 @@ use bevy_ecs::{
     system::{SystemParam, SystemParamItem, SystemState},
     world::{CommandQueue, World},
 };
-use bevy_winit::{EventLoopProxy, EventLoopProxyWrapper, WakeUp};
+use bevy_winit::{EventLoopProxy, EventLoopProxyWrapper, WinitUserEvent};
 use core::fmt;
 use hashbrown::HashMap;
 use slotmap::{DefaultKey, SlotMap};
@@ -57,7 +57,7 @@ impl Plugin for ActuatePlugin {
             composers: RefCell::new(HashMap::new()),
         };
 
-        app.insert_non_send_resource(rt)
+        app.insert_non_send(rt)
             .add_systems(bevy_app::prelude::Update, compose);
     }
 }
@@ -163,7 +163,7 @@ where
                 let content = composition.content.take().unwrap();
                 let target = composition.target.unwrap_or(cx.entity);
 
-                let rt = world.non_send_resource_mut::<Runtime>();
+                let rt = world.non_send_mut::<Runtime>();
 
                 rt.composers.borrow_mut().insert(
                     cx.entity,
@@ -195,12 +195,12 @@ impl<C: Compose> Compose for CompositionContent<C> {
 }
 
 struct RuntimeWaker {
-    proxy: EventLoopProxy<WakeUp>,
+    proxy: EventLoopProxy<WinitUserEvent>,
 }
 
 impl Wake for RuntimeWaker {
     fn wake(self: Arc<Self>) {
-        self.proxy.send_event(WakeUp).unwrap();
+        self.proxy.send_event(WinitUserEvent::WakeUp).unwrap();
     }
 }
 
@@ -235,11 +235,8 @@ fn compose(world: &mut World) {
     rt.commands.borrow_mut().apply(world);
     drop(rt);
 
-    let proxy = (*world
-        .get_resource::<EventLoopProxyWrapper<WakeUp>>()
-        .unwrap())
-    .clone();
-    let rt = &mut *world.non_send_resource_mut::<Runtime>();
+    let proxy = (*world.get_resource::<EventLoopProxyWrapper>().unwrap()).clone();
+    let rt = &mut *world.non_send_mut::<Runtime>();
     let mut composers = rt.composers.borrow_mut();
     for rt_composer in composers.values_mut() {
         let waker = Waker::from(Arc::new(RuntimeWaker {
@@ -393,7 +390,7 @@ where
         let system_state =
             system_state_cell.get_or_insert_with(|| SystemState::<F::Param>::new(world));
 
-        let params = system_state.get_mut(world);
+        let params = system_state.get_mut(world).unwrap();
         with_world.run((), params);
 
         system_state.apply(world);
@@ -463,7 +460,7 @@ where
     use_ref(cx, || {
         let world = unsafe { RuntimeContext::current().world_mut() };
         let mut param = SystemState::<F::Param>::new(world);
-        let item = param.get_mut(world);
+        let item = param.get_mut(world).unwrap();
 
         let output = with_world.run(item);
         param.apply(world);
@@ -480,7 +477,7 @@ impl UseCommands {
     /// Push a [`Command`] to the command queue.
     pub fn push<C>(&mut self, command: C)
     where
-        C: Command,
+        C: Command<Out = ()>,
     {
         self.commands.borrow_mut().push(command);
     }

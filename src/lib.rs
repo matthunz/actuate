@@ -10,7 +10,7 @@
 //! This crate provides a generic library that lets you define reactive components
 //! (also known as composables, for more see [`Compose`]).
 //!
-//! ```no_run
+//! ```ignore
 //! use actuate::prelude::*;
 //! use bevy::prelude::*;
 //!
@@ -42,7 +42,7 @@
 //!
 //! ## Borrowing
 //! Composables can borrow from their ancestors, as well as state.
-//! ```no_run
+//! ```ignore
 //! use actuate::prelude::*;
 //! use bevy::prelude::*;
 //!
@@ -935,7 +935,7 @@ pub fn use_drop<'a>(cx: ScopeState<'a>, f: impl FnOnce() + 'a) {
 ///
 /// Sending child state to parents.
 ///
-/// ```
+/// ```ignore
 /// use actuate::prelude::*;
 /// use tokio::sync::mpsc;
 /// use std::cell::Cell;

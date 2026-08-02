@@ -79,9 +79,9 @@ impl Compose for RadioButton<'_> {
                     width: size,
                     height: size,
                     border: UiRect::all(Val::Px(cx.me().border_width)),
+                    border_radius: BorderRadius::MAX,
                     ..Default::default()
                 },
-                BorderRadius::MAX,
                 BorderColor::all(theme.colors.primary),
                 BoxShadow::new(
                     Color::srgba(0., 0., 0., 0.12 * cx.me().elevation),
@@ -98,11 +98,10 @@ impl Compose for RadioButton<'_> {
                         height: inner_size,
                         top: offset,
                         left: offset,
-
+                        border_radius: BorderRadius::MAX,
                         ..Default::default()
                     },
                     BackgroundColor(theme.colors.primary),
-                    BorderRadius::MAX,
                 )))
             } else {
                 None

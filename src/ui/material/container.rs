@@ -78,9 +78,9 @@ impl<C: Compose> Compose for Container<'_, C> {
                     align_items: AlignItems::Center,
                     padding: cx.me().padding,
                     overflow: Overflow::clip(),
+                    border_radius: cx.me().border_radius,
                     ..Default::default()
                 },
-                cx.me().border_radius,
                 BackgroundColor(
                     cx.me()
                         .background_color
