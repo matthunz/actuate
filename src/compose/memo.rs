@@ -1,5 +1,5 @@
-use super::{use_node, AnyCompose, Runtime};
-use crate::{compose::Compose, composer::ComposePtr, data::Data, use_ref, Scope};
+use super::{AnyCompose, Runtime, use_node};
+use crate::{Scope, compose::Compose, composer::ComposePtr, data::Data, use_ref};
 use alloc::borrow::Cow;
 use core::{cell::RefCell, mem};
 

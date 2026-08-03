@@ -1,5 +1,5 @@
 use super::{AnyCompose, Node, Runtime};
-use crate::{compose::Compose, data::Data, use_ref, Scope, ScopeData, Signal};
+use crate::{Scope, ScopeData, Signal, compose::Compose, data::Data, use_ref};
 use alloc::rc::Rc;
 use core::{cell::RefCell, mem};
 use slotmap::DefaultKey;

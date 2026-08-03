@@ -1,7 +1,8 @@
 use crate::{
+    ScopeState, Signal, SignalMut,
     data::Data,
     ecs::{use_world, use_world_once},
-    use_local_task, use_mut, use_ref, ScopeState, Signal, SignalMut,
+    use_local_task, use_mut, use_ref,
 };
 use bevy_ecs::prelude::*;
 use bevy_math::VectorSpace;

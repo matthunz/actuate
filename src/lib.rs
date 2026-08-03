@@ -129,21 +129,22 @@ use std::collections::HashMap;
 /// Prelude of commonly used items.
 pub mod prelude {
     pub use crate::{
-        compose::{self, catch, dyn_compose, memo, Compose, DynCompose, Error, Memo},
-        data::{data, Data},
+        Cow, Generational, Map, RefMap, Scope, ScopeState, Signal, SignalMut,
+        compose::{self, Compose, DynCompose, Error, Memo, catch, dyn_compose, memo},
+        data::{Data, data},
         use_callback, use_context, use_drop, use_local_task, use_memo, use_mut, use_provider,
-        use_ref, Cow, Generational, Map, RefMap, Scope, ScopeState, Signal, SignalMut,
+        use_ref,
     };
 
     #[cfg(feature = "animation")]
     #[cfg_attr(docsrs, doc(cfg(feature = "animation")))]
-    pub use crate::animation::{use_animated, UseAnimated};
+    pub use crate::animation::{UseAnimated, use_animated};
 
     #[cfg(feature = "ecs")]
     #[cfg_attr(docsrs, doc(cfg(feature = "ecs")))]
     pub use crate::ecs::{
-        spawn, use_bundle, use_commands, use_world, use_world_once, ActuatePlugin, Composition,
-        Modifier, Modify, Spawn, UseCommands,
+        ActuatePlugin, Composition, Modifier, Modify, Spawn, UseCommands, spawn, use_bundle,
+        use_commands, use_world, use_world_once,
     };
 
     #[cfg(feature = "executor")]
@@ -152,13 +153,13 @@ pub mod prelude {
 
     #[cfg(feature = "ui")]
     #[cfg_attr(docsrs, doc(cfg(feature = "ui")))]
-    pub use crate::ui::{scroll_view, ScrollView};
+    pub use crate::ui::{ScrollView, scroll_view};
 
     #[cfg(feature = "material")]
     #[cfg_attr(docsrs, doc(cfg(feature = "material")))]
     pub use crate::ui::material::{
-        button, container, material_ui, radio_button, text, Button, MaterialUi, RadioButton, Theme,
-        TypographyKind, TypographyStyleKind,
+        Button, MaterialUi, RadioButton, Theme, TypographyKind, TypographyStyleKind, button,
+        container, material_ui, radio_button, text,
     };
 }
 
@@ -877,15 +878,14 @@ where
     let value_mut = use_mut(cx, || make_value_cell.take().unwrap()());
     let last_mut = use_mut(cx, || dependency_cell.take().unwrap());
 
-    if let Some(make_value) = make_value_cell {
-        if let Some(dependency) = dependency_cell.take() {
-            if dependency != *last_mut {
-                let value = make_value();
-                SignalMut::with(value_mut, move |update| *update = value);
+    if let Some(make_value) = make_value_cell
+        && let Some(dependency) = dependency_cell.take()
+        && dependency != *last_mut
+    {
+        let value = make_value();
+        SignalMut::with(value_mut, move |update| *update = value);
 
-                SignalMut::with(last_mut, move |dst| *dst = dependency);
-            }
-        }
+        SignalMut::with(last_mut, move |dst| *dst = dependency);
     }
 
     SignalMut::as_ref(value_mut)

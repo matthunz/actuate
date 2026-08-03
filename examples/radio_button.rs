@@ -18,7 +18,7 @@ impl Compose for Example {
 }
 
 fn setup(mut commands: Commands) {
-    commands.spawn(Camera2d::default());
+    commands.spawn(Camera2d);
 
     // Spawn a composition with a `Counter`, adding it to the Actuate runtime.
     commands.spawn((

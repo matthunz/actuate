@@ -1,5 +1,5 @@
-use super::{drop_node, AnyCompose, Node, Runtime};
-use crate::{compose::Compose, use_ref, Scope, ScopeData};
+use super::{AnyCompose, Node, Runtime, drop_node};
+use crate::{Scope, ScopeData, compose::Compose, use_ref};
 use alloc::rc::Rc;
 use core::{
     any::TypeId,

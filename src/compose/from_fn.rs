@@ -1,4 +1,4 @@
-use crate::{compose::Compose, Data, Scope, ScopeState};
+use crate::{Data, Scope, ScopeState, compose::Compose};
 use core::marker::PhantomData;
 
 /// Create a composable from a function.

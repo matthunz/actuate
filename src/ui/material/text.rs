@@ -1,6 +1,6 @@
 use super::{Theme, TypographyKind, TypographyStyleKind};
 use crate::{
-    ecs::{spawn, Modifier, Modify},
+    ecs::{Modifier, Modify, spawn},
     prelude::Compose,
     use_context,
 };

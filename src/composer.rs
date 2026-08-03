@@ -1,6 +1,6 @@
 use crate::{
-    compose::{AnyCompose, CatchContext, Compose},
     ScopeData,
+    compose::{AnyCompose, CatchContext, Compose},
 };
 use alloc::{collections::BTreeSet, rc::Rc, sync::Arc, task::Wake};
 use core::{

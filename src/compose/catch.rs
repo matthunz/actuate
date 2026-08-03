@@ -1,5 +1,5 @@
 use super::CatchContext;
-use crate::{compose::Compose, data::Data, use_provider, Scope, Signal};
+use crate::{Scope, Signal, compose::Compose, data::Data, use_provider};
 use alloc::rc::Rc;
 use core::mem;
 

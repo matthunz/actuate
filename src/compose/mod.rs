@@ -1,7 +1,8 @@
 use crate::{
+    Scope, ScopeData, ScopeState,
     composer::{ComposePtr, Node, Runtime},
     data::Data,
-    use_context, use_ref, Scope, ScopeData, ScopeState,
+    use_context, use_ref,
 };
 use alloc::borrow::Cow;
 use alloc::rc::Rc;
@@ -13,19 +14,19 @@ use core::{
 use slotmap::{DefaultKey, SlotMap};
 
 mod catch;
-pub use self::catch::{catch, Catch};
+pub use self::catch::{Catch, catch};
 
 mod dyn_compose;
-pub use self::dyn_compose::{dyn_compose, DynCompose};
+pub use self::dyn_compose::{DynCompose, dyn_compose};
 
 mod from_fn;
-pub use self::from_fn::{from_fn, FromFn};
+pub use self::from_fn::{FromFn, from_fn};
 
 mod from_iter;
-pub use self::from_iter::{from_iter, FromIter};
+pub use self::from_iter::{FromIter, from_iter};
 
 mod memo;
-pub use self::memo::{memo, Memo};
+pub use self::memo::{Memo, memo};
 
 /// A composable function.
 ///

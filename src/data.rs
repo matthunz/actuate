@@ -54,10 +54,10 @@
 //! }
 //! ```
 
-use crate::{compose::DynCompose, HashMap};
+use crate::{HashMap, compose::DynCompose};
 use core::{error::Error, future::Future, ops::Range, pin::Pin};
 
-pub use actuate_macros::{data, Data};
+pub use actuate_macros::{Data, data};
 
 /// Composable data.
 ///

@@ -1,8 +1,9 @@
 use crate::{
+    Cow, Scope, ScopeState, Signal,
     compose::Compose,
     composer::{Composer, Pending},
     data::Data,
-    use_callback, use_drop, use_provider, use_ref, Cow, Scope, ScopeState, Signal,
+    use_callback, use_drop, use_provider, use_ref,
 };
 use bevy_app::{App, Plugin};
 use bevy_ecs::{
@@ -32,7 +33,7 @@ use bevy_ui::prelude::*;
 use bevy_picking::prelude::*;
 
 mod spawn;
-pub use self::spawn::{spawn, Spawn};
+pub use self::spawn::{Spawn, spawn};
 
 macro_rules! impl_trait_for_tuples {
     ($t:tt) => {

@@ -1,8 +1,9 @@
 use super::Theme;
 use crate::{
-    ecs::{spawn, Modifier, Modify},
+    Scope, Signal,
+    ecs::{Modifier, Modify, spawn},
     prelude::Compose,
-    use_provider, Scope, Signal,
+    use_provider,
 };
 use actuate_macros::Data;
 use bevy_ui::{BackgroundColor, FlexDirection, Node, Val};

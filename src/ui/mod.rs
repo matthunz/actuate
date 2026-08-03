@@ -1,7 +1,8 @@
 use crate::{
-    ecs::{spawn, use_world, Modifier, Modify},
+    Scope, Signal, SignalMut,
+    ecs::{Modifier, Modify, spawn, use_world},
     prelude::Compose,
-    use_mut, Scope, Signal, SignalMut,
+    use_mut,
 };
 use actuate_macros::Data;
 use bevy_ecs::prelude::*;
@@ -88,17 +89,16 @@ impl<C: Compose> Compose for ScrollView<'_, C> {
                         std::mem::swap(&mut dx, &mut dy)
                     }
 
-                    if *is_hovered {
-                        if let Some(entity) = *entity_cell {
-                            if let Ok(mut scroll_position) = scrolled_node_query.get_mut(entity) {
-                                if cx.me().scroll_x {
-                                    scroll_position.x -= dx;
-                                }
+                    if *is_hovered
+                        && let Some(entity) = *entity_cell
+                        && let Ok(mut scroll_position) = scrolled_node_query.get_mut(entity)
+                    {
+                        if cx.me().scroll_x {
+                            scroll_position.x -= dx;
+                        }
 
-                                if cx.me().scroll_y {
-                                    scroll_position.y -= dy;
-                                }
-                            }
+                        if cx.me().scroll_y {
+                            scroll_position.y -= dy;
                         }
                     }
                 }

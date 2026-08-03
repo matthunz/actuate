@@ -1,9 +1,10 @@
 use super::Theme;
 use crate::{
+    Data, Scope,
     compose::Compose,
     ecs::spawn,
     ecs::{Modifier, Modify},
-    use_context, Data, Scope,
+    use_context,
 };
 use bevy_color::Color;
 use bevy_ui::{BackgroundColor, BorderColor, BorderRadius, BoxShadow, Node, UiRect, Val};

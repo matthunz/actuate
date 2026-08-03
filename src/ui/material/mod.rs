@@ -2,16 +2,16 @@ use bevy_color::Color;
 use std::ops::Index;
 
 mod button;
-pub use self::button::{button, Button};
+pub use self::button::{Button, button};
 
 mod container;
-pub use self::container::{container, Container};
+pub use self::container::{Container, container};
 
 mod radio;
-pub use self::radio::{radio_button, RadioButton};
+pub use self::radio::{RadioButton, radio_button};
 
 mod ui;
-pub use self::ui::{material_ui, MaterialUi};
+pub use self::ui::{MaterialUi, material_ui};
 
 /// Text composables.
 pub mod text;

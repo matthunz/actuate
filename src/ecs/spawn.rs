@@ -1,7 +1,7 @@
-use super::{use_bundle_inner, RuntimeContext, SpawnContext, SystemParamFunction};
+use super::{RuntimeContext, SpawnContext, SystemParamFunction, use_bundle_inner};
 use crate::{
-    compose::Compose, composer::Runtime, data::Data, use_context, use_drop, use_provider, use_ref,
-    Scope, Signal,
+    Scope, Signal, compose::Compose, composer::Runtime, data::Data, use_context, use_drop,
+    use_provider, use_ref,
 };
 use bevy_ecs::{entity::Entity, prelude::*, world::World};
 use std::{
@@ -172,10 +172,10 @@ impl<C: Compose> Compose for Spawn<'_, C> {
             }
 
             // Check if this entity has been removed externally.
-            if let Some(entity) = entity {
-                if world.get_entity(*entity).is_err() {
-                    return;
-                }
+            if let Some(entity) = entity
+                && world.get_entity(*entity).is_err()
+            {
+                return;
             }
 
             (cx.me().spawn_fn)(world, entity);
@@ -200,21 +200,21 @@ impl<C: Compose> Compose for Spawn<'_, C> {
         let key = use_ref(&cx, || rt.pending(rt.current_key.get()));
 
         use_provider(&cx, || {
-            if cx.me().target.is_none() {
-                if let Ok(spawn_cx) = spawn_cx {
-                    spawn_cx.keys.borrow_mut().insert(key.clone());
+            if cx.me().target.is_none()
+                && let Ok(spawn_cx) = spawn_cx
+            {
+                spawn_cx.keys.borrow_mut().insert(key.clone());
 
-                    if let Some(idx) = spawn_cx
-                        .keys
-                        .borrow()
-                        .iter()
-                        .position(|pending| pending.key == rt.current_key.get())
-                    {
-                        let world = unsafe { RuntimeContext::current().world_mut() };
-                        world
-                            .entity_mut(spawn_cx.parent_entity)
-                            .insert_children(idx, &[entity]);
-                    }
+                if let Some(idx) = spawn_cx
+                    .keys
+                    .borrow()
+                    .iter()
+                    .position(|pending| pending.key == rt.current_key.get())
+                {
+                    let world = unsafe { RuntimeContext::current().world_mut() };
+                    world
+                        .entity_mut(spawn_cx.parent_entity)
+                        .insert_children(idx, &[entity]);
                 }
             }
 
