@@ -1,7 +1,12 @@
 use super::{AnyCompose, Node, Runtime};
 use crate::{Scope, ScopeData, Signal, compose::Compose, data::Data, use_ref};
 use alloc::rc::Rc;
-use core::{cell::RefCell, mem};
+use core::{
+    cell::{RefCell, UnsafeCell},
+    marker::PhantomData,
+    mem,
+    ptr::NonNull,
+};
 use slotmap::DefaultKey;
 
 /// Create a composable from an iterator.
@@ -92,12 +97,22 @@ where
 
         let rt = Runtime::current();
 
+        // Refresh the items that already have state, so existing children observe
+        // the current value rather than the one they were created with.
+        //
+        // Safety: the item is stored in an `UnsafeCell`, so the references handed to
+        // child composables stay valid across this write. No child is composing while
+        // this composable runs, so no reference to the item is live here.
+        for (idx, item) in items.iter_mut().enumerate().take(states.len()) {
+            unsafe { *states[idx].item.get() = item.take().unwrap() };
+        }
+
         if items.len() >= states.len() {
             for item in &mut items[states.len()..] {
                 let item = item.take().unwrap();
 
                 let state = ItemState {
-                    item: Box::new(item),
+                    item: Box::new(UnsafeCell::new(item)),
                     key: None,
                 };
                 states.push(state);
@@ -110,13 +125,15 @@ where
             let mut nodes = rt.nodes.borrow_mut();
 
             if states[idx].key.is_none() {
-                // Safety: `item` is boxed, so this reference remains valid even after
-                // `states` is reallocated by a later push.
-                let item_ref: &Item = &states[idx].item;
-                let item_ref: &Item = unsafe { mem::transmute(item_ref) };
+                // Safety: `item` is boxed, so this pointer stays valid even after
+                // `states` is reallocated by a later push. It is derived straight from
+                // the `UnsafeCell` rather than through a reference, so that updating
+                // the item in place does not invalidate it.
+                let item_ptr = unsafe { NonNull::new_unchecked(states[idx].item.get()) };
                 let compose = (cx.me().make_item)(Signal {
-                    value: item_ref,
+                    value: item_ptr,
                     generation: &cx.generation as _,
+                    _marker: PhantomData,
                 });
                 let any_compose: Box<dyn AnyCompose> = Box::new(compose);
                 let any_compose: Box<dyn AnyCompose> = unsafe { mem::transmute(any_compose) };
@@ -156,7 +173,8 @@ where
 
 struct ItemState<T> {
     /// Boxed so that child composables can hold a stable reference to this item
-    /// across reallocations of the enclosing `Vec<ItemState<T>>`.
-    item: Box<T>,
+    /// across reallocations of the enclosing `Vec<ItemState<T>>`, and wrapped in an
+    /// `UnsafeCell` so that those references survive the item being updated in place.
+    item: Box<UnsafeCell<T>>,
     key: Option<DefaultKey>,
 }
