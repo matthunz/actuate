@@ -195,6 +195,11 @@ pub mod executor;
 /// User interface components.
 pub mod ui;
 
+#[cfg(feature = "web")]
+#[cfg_attr(docsrs, doc(cfg(feature = "web")))]
+/// Web (DOM) integration.
+pub mod web;
+
 /// Clone-on-write value.
 ///
 /// This represents either a borrowed or owned value.

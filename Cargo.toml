@@ -16,6 +16,7 @@ rt = ["executor", "tokio/rt-multi-thread"]
 std = []
 tracing = ["dep:tracing"]
 ui = ["dep:bevy_ui"]
+web = ["std", "dep:wasm-bindgen", "dep:web-sys"]
 full = ["animation", "ecs", "material", "rt", "tracing"]
 default = ["std"]
 
@@ -47,6 +48,20 @@ thiserror = "2.0.3"
 tracing = { version = "0.1.40", optional = true }
 tokio = { version = "1.41.1", features = ["sync"], optional = true }
 typeid = "1.0.2"
+wasm-bindgen = { version = "0.2.95", optional = true }
+web-sys = { version = "0.3.72", optional = true, features = [
+    "CharacterData",
+    "Document",
+    "Element",
+    "console",
+    "Event",
+    "EventTarget",
+    "HtmlElement",
+    "Node",
+    "NodeList",
+    "Text",
+    "Window",
+] }
 
 [dev-dependencies]
 bevy = { version = "0.19.0" }
@@ -74,3 +89,7 @@ required-features = ["material"]
 [[example]]
 name = "timer"
 required-features = ["ecs"]
+
+[[example]]
+name = "web"
+required-features = ["web"]
