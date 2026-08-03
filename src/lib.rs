@@ -389,18 +389,25 @@ impl<T> Hash for Map<'_, T> {
 ///
 /// This reference can be mapped to inner values with [`Signal::map`].
 pub struct Signal<'a, T> {
-    /// Pinned reference to the value.
-    value: &'a T,
+    /// Pointer to the pinned value.
+    ///
+    /// This is stored as a pointer rather than a reference so that the value may be
+    /// updated in place while a `Signal` to it is held, as long as the value lives in
+    /// an `UnsafeCell`. A `&'a T` would be invalidated by any such write.
+    value: NonNull<T>,
 
     /// Pointer to this value's current generation.
     generation: *const Cell<u64>,
+
+    /// Marker for the lifetime of this immutable reference.
+    _marker: PhantomData<&'a T>,
 }
 
 impl<'a, T> Signal<'a, T> {
     /// Map this reference to a value of type `U`.
     pub fn map<U>(me: Self, f: fn(&T) -> &U) -> Map<'a, U> {
         Map {
-            ptr: me.value as *const _ as _,
+            ptr: me.value.as_ptr() as _,
             map_fn: f as _,
             deref_fn: |ptr, g| {
                 // Safety: `f` is guranteed to be a valid function pointer.
@@ -430,13 +437,15 @@ impl<T> Deref for Signal<'_, T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
-        self.value
+        // Safety: the pointer is derived from a reference valid for `'a`, and is
+        // re-derived on every deref so that in-place updates to the value are observed.
+        unsafe { self.value.as_ref() }
     }
 }
 
 impl<T> Hash for Signal<'_, T> {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        (self.value as *const T).hash(state);
+        self.value.as_ptr().hash(state);
         self.generation.hash(state);
     }
 }
@@ -519,8 +528,9 @@ impl<'a, T: 'static> SignalMut<'a, T> {
     /// Convert this mutable reference to an immutable reference.
     pub fn as_ref(me: Self) -> Signal<'a, T> {
         Signal {
-            value: unsafe { me.ptr.as_ref() },
+            value: me.ptr,
             generation: me.generation,
+            _marker: PhantomData,
         }
     }
 }
@@ -639,8 +649,9 @@ impl<'a, C> Scope<'a, C> {
     /// Get a [`Signal`] to this composable.
     pub fn me(self) -> Signal<'a, C> {
         Signal {
-            value: self.me,
+            value: NonNull::from(self.me),
             generation: &self.state.generation,
+            _marker: PhantomData,
         }
     }
 
