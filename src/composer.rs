@@ -44,15 +44,19 @@ impl AnyCompose for ComposePtr {
 
     unsafe fn reborrow(&mut self, ptr: *mut ()) {
         match self {
-            ComposePtr::Boxed(compose) => compose.reborrow(ptr),
+            // Safety: the caller guarantees `ptr` is valid for this compose.
+            ComposePtr::Boxed(compose) => unsafe { compose.reborrow(ptr) },
             ComposePtr::Ptr(_) => {}
         }
     }
 
     unsafe fn any_compose(&self, state: &ScopeData) {
         match self {
-            ComposePtr::Boxed(compose) => compose.any_compose(state),
-            ComposePtr::Ptr(ptr) => (**ptr).any_compose(state),
+            // Safety: the caller guarantees `&self` is valid for the lifetime of `state`.
+            ComposePtr::Boxed(compose) => unsafe { compose.any_compose(state) },
+            // Safety: the caller guarantees `&self`, and therefore `ptr`,
+            // is valid for the lifetime of `state`.
+            ComposePtr::Ptr(ptr) => unsafe { (**ptr).any_compose(state) },
         }
     }
 

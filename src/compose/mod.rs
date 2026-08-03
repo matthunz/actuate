@@ -373,7 +373,7 @@ where
     }
 
     unsafe fn reborrow(&mut self, ptr: *mut ()) {
-        core::ptr::swap(self, ptr as _);
+        unsafe { core::ptr::swap(self, ptr as _) }
     }
 
     unsafe fn any_compose(&self, state: &ScopeData) {

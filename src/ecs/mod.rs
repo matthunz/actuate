@@ -90,7 +90,8 @@ impl RuntimeContext {
     }
 
     unsafe fn world_mut(&self) -> &'static mut World {
-        &mut *self.inner.borrow().world_ptr
+        // Safety: the caller guarantees unique access to the world for `'static`.
+        unsafe { &mut *self.inner.borrow().world_ptr }
     }
 }
 
