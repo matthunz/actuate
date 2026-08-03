@@ -96,18 +96,23 @@ where
             for item in &mut items[states.len()..] {
                 let item = item.take().unwrap();
 
-                let state = ItemState { item, key: None };
+                let state = ItemState {
+                    item: Box::new(item),
+                    key: None,
+                };
                 states.push(state);
             }
         } else {
             states.truncate(items.len());
         }
 
-        for (idx, state) in states.iter_mut().enumerate() {
+        for idx in 0..states.len() {
             let mut nodes = rt.nodes.borrow_mut();
 
-            if state.key.is_none() {
-                let item_ref: &Item = &state.item;
+            if states[idx].key.is_none() {
+                // Safety: `item` is boxed, so this reference remains valid even after
+                // `states` is reallocated by a later push.
+                let item_ref: &Item = &states[idx].item;
                 let item_ref: &Item = unsafe { mem::transmute(item_ref) };
                 let compose = (cx.me().make_item)(Signal {
                     value: item_ref,
@@ -130,10 +135,10 @@ where
                     .borrow_mut()
                     .push(key);
 
-                state.key = Some(key);
+                states[idx].key = Some(key);
             }
 
-            let node = nodes.get(state.key.unwrap()).unwrap().clone();
+            let node = nodes.get(states[idx].key.unwrap()).unwrap().clone();
 
             *node.scope.contexts.borrow_mut() = cx.contexts.borrow().clone();
             node.scope
@@ -144,12 +149,14 @@ where
 
             drop(nodes);
 
-            rt.queue(state.key.unwrap());
+            rt.queue(states[idx].key.unwrap());
         }
     }
 }
 
 struct ItemState<T> {
-    item: T,
+    /// Boxed so that child composables can hold a stable reference to this item
+    /// across reallocations of the enclosing `Vec<ItemState<T>>`.
+    item: Box<T>,
     key: Option<DefaultKey>,
 }
