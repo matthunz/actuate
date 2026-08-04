@@ -30,8 +30,13 @@ jobs:
           key: ${{ runner.os }}-cargo-test-${{ hashFiles('**/Cargo.toml') }}
       - name: Install stable toolchain
         uses: dtolnay/rust-toolchain@stable
+      - name: Install Dependencies
+        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev
       - name: Run cargo build
         run: cargo build --verbose
+      # Each feature has to build on its own, not just as part of `full`.
+      - name: Run cargo build --features ui
+        run: cargo build --no-default-features --features ui --verbose
 
   # Run cargo fmt --all -- --check
   format:

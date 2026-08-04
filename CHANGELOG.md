@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+## Breaking changes
+
+- The `ui` feature now enables `ecs` and `picking`, and pulls in `bevy_color`, `bevy_input`,
+  `bevy_input_focus`, and `bevy_text`. It previously only enabled `bevy_ui`, which wasn't enough
+  to build `src/ui` on its own.
+
+## Features
+
+- Add `text_input` composable
+
 ## [0.22.0](https://github.com/actuate-rs/actuate/compare/actuate-v0.21.0...actuate-v0.22.0) - 2026-8-2
 
 ## Breaking changes
