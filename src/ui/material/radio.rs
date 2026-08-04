@@ -71,7 +71,8 @@ impl Compose for RadioButton<'_> {
 
         let size = Val::Px(cx.me().outer_radius * 2.);
         let inner_size = Val::Px(cx.me().inner_radius * 2.);
-        let offset = Val::Px((cx.me().outer_radius - cx.me().inner_radius) - 2.);
+        let padding = Val::Px((cx.me().outer_radius - cx.me().inner_radius) - 2.);
+        let padding_rect = UiRect::all(padding);
 
         cx.me()
             .modifier
@@ -80,6 +81,7 @@ impl Compose for RadioButton<'_> {
                     width: size,
                     height: size,
                     border: UiRect::all(Val::Px(cx.me().border_width)),
+                    padding: padding_rect,
                     border_radius: BorderRadius::MAX,
                     ..Default::default()
                 },
@@ -97,8 +99,6 @@ impl Compose for RadioButton<'_> {
                     Node {
                         width: inner_size,
                         height: inner_size,
-                        top: offset,
-                        left: offset,
                         border_radius: BorderRadius::MAX,
                         ..Default::default()
                     },

@@ -18,7 +18,7 @@ use core::fmt;
 use hashbrown::HashMap;
 use slotmap::{DefaultKey, SlotMap};
 use std::{
-    cell::{Cell, RefCell},
+    cell::RefCell,
     collections::BTreeSet,
     mem, ptr,
     rc::Rc,
@@ -81,18 +81,27 @@ struct RuntimeContext {
 
 impl RuntimeContext {
     fn current() -> Self {
-        RUNTIME_CONTEXT.with(|cell| {
-            let cell_ref = cell.borrow();
-            let Some(rt) = cell_ref.as_ref() else {
-                panic!("Must be called from within a composable.")
-            };
-            rt.clone()
-        })
+        Self::try_current().expect("Must be called from within a composable.")
+    }
+
+    fn try_current() -> Option<Self> {
+        RUNTIME_CONTEXT.with(|cell| cell.borrow().clone())
     }
 
     unsafe fn world_mut(&self) -> &'static mut World {
         // Safety: the caller guarantees unique access to the world for `'static`.
-        unsafe { &mut *self.inner.borrow().world_ptr }
+        unsafe { self.try_world_mut() }.expect("Must be called during a composition.")
+    }
+
+    /// Get the world, if a composition is currently running.
+    ///
+    /// The world is only borrowed for the duration of [`compose`], so this is `None` when
+    /// called outside of one, such as while the world itself is being dropped.
+    unsafe fn try_world_mut(&self) -> Option<&'static mut World> {
+        let world_ptr = self.inner.borrow().world_ptr;
+
+        // Safety: the caller guarantees unique access to the world for `'static`.
+        (!world_ptr.is_null()).then(|| unsafe { &mut *world_ptr })
     }
 }
 
@@ -237,18 +246,29 @@ fn compose(world: &mut World) {
     rt.commands.borrow_mut().apply(world);
     drop(rt);
 
-    let proxy = (*world.get_resource::<EventLoopProxyWrapper>().unwrap()).clone();
+    // Without an event loop (such as in a headless app), wakers can't request a redraw.
+    let proxy = world
+        .get_resource::<EventLoopProxyWrapper>()
+        .map(|proxy| (*proxy).clone());
+
     let rt = &mut *world.non_send_mut::<Runtime>();
     let mut composers = rt.composers.borrow_mut();
     for rt_composer in composers.values_mut() {
-        let waker = Waker::from(Arc::new(RuntimeWaker {
-            proxy: proxy.clone(),
-        }));
+        let waker = match &proxy {
+            Some(proxy) => Waker::from(Arc::new(RuntimeWaker {
+                proxy: proxy.clone(),
+            })),
+            None => futures::task::noop_waker(),
+        };
         let mut cx = Context::from_waker(&waker);
 
         // TODO handle composition error.
         let _ = rt_composer.composer.poll_compose(&mut cx);
     }
+
+    // The world is only borrowed for the duration of this system. Composables dropped
+    // afterwards (such as when the world itself is dropped) must not access it.
+    rt_cx.inner.borrow_mut().world_ptr = ptr::null_mut();
 }
 
 /// A function that takes a [`SystemParam`] as input.
@@ -531,8 +551,14 @@ fn use_bundle_inner(
     }
 
     use_drop(cx, move || {
-        let world = unsafe { RuntimeContext::current().world_mut() };
-        world.try_despawn(entity).ok();
+        // Skip when there's no world to despawn from, such as when this composition is
+        // being dropped along with the world itself.
+        if let Some(world) = RuntimeContext::try_current()
+            // Safety: composables are only dropped with unique access to the world.
+            .and_then(|rt_cx| unsafe { rt_cx.try_world_mut() })
+        {
+            world.try_despawn(entity).ok();
+        }
     });
 
     entity
@@ -600,6 +626,8 @@ macro_rules! handler_methods {
             where
                 Self: Sized,
             {
+                // `Arc` so the observer closure stays `Clone + Send + Sync`.
+                let f = Arc::new(f);
                 self.observe(move |_: On<Pointer<$e>>| f())
             }
         )*
@@ -705,21 +733,22 @@ pub trait Modify<'a> {
     );
 
     /// Add an observer to this composable's bundle.
+    ///
+    /// `observer` must be [`Clone`] because a modifier is re-applied on every
+    /// re-compose. [`Spawn`] only installs observers on the initial spawn, so
+    /// the clones made by later re-composes are discarded.
     fn observe<F, E, B, Marker>(self, observer: F) -> Self
     where
         Self: Sized,
         F: SystemParamFunction<Marker, In = On<'static, 'static, E, B>, Out = ()>
+            + Clone
             + Send
             + Sync
             + 'a,
         E: EntityEvent,
         B: Bundle,
     {
-        let observer_cell = Cell::new(Some(observer));
-        self.modify(move |spawn| {
-            let observer = observer_cell.take().unwrap();
-            spawn.observe(observer)
-        })
+        self.modify(move |spawn| spawn.observe(observer.clone()))
     }
 
     handler_methods!(

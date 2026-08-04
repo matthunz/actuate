@@ -10,12 +10,20 @@ repository = "https://github.com/actuate-rs/actuate"
 animation = ["ecs", "dep:bevy_math", "dep:bevy_time", "dep:tokio"]
 ecs = ["std", "dep:bevy_app", "dep:bevy_ecs", "dep:bevy_utils", "dep:bevy_winit"]
 executor = ["std", "dep:tokio"]
-material = ["ecs", "ui", "picking", "dep:bevy_color", "dep:bevy_input", "dep:bevy_text"]
+material = ["ui"]
 picking = ["dep:bevy_picking"]
 rt = ["executor", "tokio/rt-multi-thread"]
 std = []
 tracing = ["dep:tracing"]
-ui = ["dep:bevy_ui"]
+ui = [
+    "ecs",
+    "picking",
+    "dep:bevy_color",
+    "dep:bevy_input",
+    "dep:bevy_input_focus",
+    "dep:bevy_text",
+    "dep:bevy_ui",
+]
 web = ["std", "dep:wasm-bindgen", "dep:web-sys"]
 full = ["animation", "ecs", "material", "rt", "tracing"]
 default = ["std"]
@@ -33,6 +41,7 @@ bevy_app = { version = "0.19.0", optional = true }
 bevy_color = { version = "0.19.0", optional = true }
 bevy_ecs = { version = "0.19.0", optional = true }
 bevy_input = { version = "0.19.0", optional = true }
+bevy_input_focus = { version = "0.19.0", optional = true }
 bevy_math = { version = "0.19.0", optional = true }
 bevy_picking = { version = "0.19.0", optional = true }
 bevy_text = { version = "0.19.0", optional = true }
@@ -93,3 +102,7 @@ required-features = ["ecs"]
 [[example]]
 name = "web"
 required-features = ["web"]
+
+[[example]]
+name = "widget_gallery"
+required-features = ["material"]
