@@ -28,8 +28,23 @@ pub struct Colors {
     /// Primary color.
     pub primary: Color,
 
+    /// Color used for content displayed on top of [`Colors::primary`].
+    pub on_primary: Color,
+
+    /// Outline color, used for borders and low-emphasis boundaries.
+    pub outline: Color,
+
+    /// Surface color.
+    pub surface: Color,
+
     /// Surface container color.
     pub surface_container: Color,
+
+    /// Highest-emphasis surface container color.
+    pub surface_container_highest: Color,
+
+    /// Color used for content displayed on top of a surface.
+    pub on_surface: Color,
 
     /// Text color.
     pub text: Color,
@@ -147,7 +162,12 @@ impl Default for Theme {
             colors: Colors {
                 background: Color::WHITE,
                 primary: Color::srgb_u8(103, 80, 164),
-                surface_container: Color::srgb_u8(230, 224, 233),
+                on_primary: Color::WHITE,
+                outline: Color::srgb_u8(121, 116, 126),
+                surface: Color::srgb_u8(254, 247, 255),
+                surface_container: Color::srgb_u8(243, 237, 247),
+                surface_container_highest: Color::srgb_u8(230, 224, 233),
+                on_surface: Color::srgb_u8(29, 27, 32),
                 text: Color::BLACK,
             },
             typography: Typography {

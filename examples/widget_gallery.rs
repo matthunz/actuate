@@ -16,6 +16,9 @@ impl Compose for WidgetGallery {
             switch()
                 .is_checked(*is_on)
                 .on_click(move || SignalMut::update(is_on, |x| *x = !*x)),
+            // Disabled switches, shown in both states.
+            switch().is_enabled(false),
+            switch().is_checked(true).is_enabled(false),
         ))
         .width(Val::Vw(100.))
     }
