@@ -13,7 +13,7 @@ use bevy_text::{EditableText, LineBreak, TextColor, TextCursorStyle, TextLayout}
 use bevy_ui::prelude::*;
 use std::{cell::RefCell, mem, rc::Rc};
 
-/// The text color to fall back on when there's no [`Theme`](crate::ui::material::Theme) to read.
+/// The text color to fall back on when there's no [`Theme`](crate::ecs::ui::material::Theme) to read.
 ///
 /// This matches the theme default, so an unthemed input still reads against a light background.
 const DEFAULT_COLOR: Color = Color::BLACK;
@@ -21,7 +21,7 @@ const DEFAULT_COLOR: Color = Color::BLACK;
 /// The theme's text color, or [`DEFAULT_COLOR`] when there's no theme.
 fn theme_color(cx: ScopeState<'_>) -> Color {
     #[cfg(feature = "material")]
-    let color = crate::use_context::<crate::ui::material::Theme>(cx)
+    let color = crate::use_context::<crate::ecs::ui::material::Theme>(cx)
         .map(|theme| theme.colors.text)
         .unwrap_or(DEFAULT_COLOR);
 
@@ -53,7 +53,7 @@ fn theme_color(cx: ScopeState<'_>) -> Color {
 /// # Examples
 ///
 /// ```no_run
-/// use actuate::prelude::*;
+/// use actuate::ecs::prelude::*;
 ///
 /// #[derive(Data)]
 /// struct Form;
@@ -143,7 +143,7 @@ impl<'a> TextInput<'a> {
 
     /// Set the color of this input's text and caret.
     ///
-    /// Defaults to the [`Theme`](crate::ui::material::Theme)'s text color, or black when
+    /// Defaults to the [`Theme`](crate::ecs::ui::material::Theme)'s text color, or black when
     /// there's no theme in context.
     pub fn color(mut self, color: Color) -> Self {
         self.color = Some(color);

@@ -6,12 +6,7 @@
 // Then generate bindings with `wasm-bindgen` and serve the result alongside an HTML
 // page that imports the generated module.
 
-// The web items are imported by name rather than with a glob, so they take precedence
-// over the `material` module's `button`/`text` when both features are enabled.
-use actuate::{
-    prelude::*,
-    web::{button, div, h1, mount_to_body, p, text},
-};
+use actuate::web::prelude::*;
 
 // Counter composable.
 #[derive(Data)]

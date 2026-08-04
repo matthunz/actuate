@@ -1,6 +1,6 @@
 // HTTP UI example
 
-use actuate::{executor::ExecutorContext, prelude::*};
+use actuate::{ecs::prelude::*, executor::ExecutorContext};
 use bevy::{prelude::*, winit::WinitSettings};
 use serde::Deserialize;
 use std::collections::HashMap;

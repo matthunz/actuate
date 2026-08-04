@@ -1,6 +1,6 @@
 // Timer UI example.
 
-use actuate::prelude::*;
+use actuate::ecs::prelude::*;
 use bevy::prelude::*;
 
 // Timer composable.

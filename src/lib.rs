@@ -10,8 +10,20 @@
 //! This crate provides a generic library that lets you define reactive components
 //! (also known as composables, for more see [`Compose`]).
 //!
+//! The core is backend-neutral: a composable is a plain [`Data`] type with
+//! a [`compose`](Compose::compose) method, and the [`composer`] drives it. A *backend* is what
+//! those composables ultimately render into. Actuate ships two, as peers:
+//!
+//! - [`ecs`] — the [Bevy](https://crates.io/crates/bevy) ECS, for scenes and UI.
+//! - [`web`] — the DOM, for the browser.
+//!
+//! ## Backends
+//! Each backend has its own prelude, re-exporting the core [`prelude`] alongside its own
+//! items. Import one of them and you have everything you need.
+//!
+//! ### Bevy
 //! ```ignore
-//! use actuate::prelude::*;
+//! use actuate::ecs::prelude::*;
 //! use bevy::prelude::*;
 //!
 //! // Counter composable.
@@ -38,13 +50,43 @@
 //!         .justify_content(JustifyContent::Center)
 //!     }
 //! }
-//!```
+//! ```
+//!
+//! ### Web
+//! ```ignore
+//! use actuate::web::prelude::*;
+//!
+//! // Counter composable.
+//! #[derive(Data)]
+//! struct Counter {
+//!     start: i32,
+//! }
+//!
+//! impl Compose for Counter {
+//!     fn compose(cx: Scope<Self>) -> impl Compose {
+//!         let count = use_mut(&cx, || cx.me().start);
+//!
+//!         div((
+//!             h1(text(format!("High five count: {}", count))),
+//!             button(text("Up high")).on("click", move |_| SignalMut::update(count, |x| *x += 1)),
+//!             button(text("Down low")).on("click", move |_| SignalMut::update(count, |x| *x -= 1)),
+//!             if *count == 0 {
+//!                 Some(p(text("Gimme five!")))
+//!             } else {
+//!                 None
+//!             },
+//!         ))
+//!         .class("counter")
+//!     }
+//! }
+//!
+//! let _composition = actuate::web::mount_to_body(Counter { start: 0 });
+//! ```
 //!
 //! ## Borrowing
 //! Composables can borrow from their ancestors, as well as state.
-//! ```ignore
+//! ```no_run
 //! use actuate::prelude::*;
-//! use bevy::prelude::*;
 //!
 //! #[derive(Data)]
 //! struct User<'a> {
@@ -54,7 +96,7 @@
 //!
 //! impl Compose for User<'_> {
 //!     fn compose(cx: Scope<Self>) -> impl Compose {
-//!         text::headline(cx.me().name.to_string())
+//!         dbg!(cx.me().name.to_string());
 //!     }
 //! }
 //!
@@ -84,22 +126,35 @@
 //! ## Installation
 //! To add this crate to your project:
 //! ```sh
+//! # Bevy backend
 //! cargo add actuate --features full
+//!
+//! # Web backend
+//! cargo add actuate --features web
 //! ```
 //!
 //! ## Features
+//! ### Core
 //! - `std`: Enables features that use Rust's standard library (default). With this feature disabled Actuate can be used in `#![no_std]` environments.
-//! - `animation`: Enables the `animation` module for animating values from the [Bevy](https://crates.io/crates/bevy) ECS.
-//!   (enables the `ecs` feature).
-//! - `ecs`: Enables the `ecs` module for bindings to the [Bevy](https://crates.io/crates/bevy) ECS.
-//! - `executor`: Enables the `executor` module for multi-threaded tasks.
-//! - `material`: Enables the `material` module for Material UI (enables the `ecs` and `ui` features).
-//! - `picking`: Enables support for picking event handlers with `Modify` (requires the `ecs` feature).
-//! - `rt` Enables support for the [Tokio](https://crates.io/crates/tokio) runtime with the Executor trait.
+//! - `executor`: Enables the [`executor`] module for multi-threaded tasks.
+//! - `rt`: Enables support for the [Tokio](https://crates.io/crates/tokio) runtime with the Executor trait.
 //!   (enables the `executor` feature).
 //! - `tracing`: Enables the logging through the `tracing` crate.
-//! - `ui`: Enables the `ui` module for user interface components.
-//! - `full`: Enables all features above.
+//!
+//! ### Bevy ECS backend
+//! - `ecs`: Enables the [`ecs`] module for bindings to the [Bevy](https://crates.io/crates/bevy) ECS.
+//! - `animation`: Enables the [`ecs::animation`] module for animating values from the Bevy ECS
+//!   (enables the `ecs` feature).
+//! - `material`: Enables the [`ecs::ui::material`] module for Material UI (enables the `ui` feature).
+//! - `picking`: Enables support for picking event handlers with [`ecs::Modify`]
+//!   (enables the `ecs` feature).
+//! - `ui`: Enables the [`ecs::ui`] module for user interface components
+//!   (enables the `ecs` and `picking` features).
+//! - `full`: Enables every core and Bevy feature above.
+//!
+//! ### Web backend
+//! - `web`: Enables the [`web`] module for bindings to the DOM. This backend targets
+//!   `wasm32-unknown-unknown` and is not part of `full`.
 
 extern crate alloc;
 
@@ -126,7 +181,15 @@ use hashbrown::HashMap;
 #[cfg(feature = "std")]
 use std::collections::HashMap;
 
-/// Prelude of commonly used items.
+/// Prelude of commonly used core items.
+///
+/// This holds only the backend-neutral core. Each backend has its own prelude that
+/// re-exports this one alongside its own items, so an app imports exactly one of:
+///
+/// ```ignore
+/// use actuate::ecs::prelude::*;
+/// use actuate::web::prelude::*;
+/// ```
 pub mod prelude {
     pub use crate::{
         Cow, Generational, Map, RefMap, Scope, ScopeState, Signal, SignalMut,
@@ -136,37 +199,10 @@ pub mod prelude {
         use_ref,
     };
 
-    #[cfg(feature = "animation")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "animation")))]
-    pub use crate::animation::{UseAnimated, use_animated};
-
-    #[cfg(feature = "ecs")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "ecs")))]
-    pub use crate::ecs::{
-        ActuatePlugin, Composition, Modifier, Modify, Spawn, UseCommands, spawn, use_bundle,
-        use_commands, use_world, use_world_once,
-    };
-
     #[cfg(feature = "executor")]
     #[cfg_attr(docsrs, doc(cfg(feature = "executor")))]
     pub use crate::use_task;
-
-    #[cfg(feature = "ui")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "ui")))]
-    pub use crate::ui::{ScrollView, TextInput, scroll_view, text_input};
-
-    #[cfg(feature = "material")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "material")))]
-    pub use crate::ui::material::{
-        Button, MaterialUi, RadioButton, Switch, Theme, TypographyKind, TypographyStyleKind,
-        button, container, material_ui, radio_button, switch, text,
-    };
 }
-
-#[cfg(feature = "animation")]
-#[cfg_attr(docsrs, doc(cfg(feature = "animation")))]
-/// Animation hooks.
-pub mod animation;
 
 /// Composable functions.
 pub mod compose;
@@ -180,24 +216,17 @@ use self::composer::Runtime;
 pub mod data;
 use crate::data::Data;
 
-#[cfg(feature = "ecs")]
-#[cfg_attr(docsrs, doc(cfg(feature = "ecs")))]
-/// Bevy ECS integration.
-pub mod ecs;
-
 #[cfg(feature = "executor")]
 #[cfg_attr(docsrs, doc(cfg(feature = "executor")))]
 /// Task execution context.
 pub mod executor;
 
-#[cfg(feature = "ui")]
-#[cfg_attr(docsrs, doc(cfg(feature = "ui")))]
-/// User interface components.
-pub mod ui;
+#[cfg(feature = "ecs")]
+#[cfg_attr(docsrs, doc(cfg(feature = "ecs")))]
+pub mod ecs;
 
 #[cfg(feature = "web")]
 #[cfg_attr(docsrs, doc(cfg(feature = "web")))]
-/// Web (DOM) integration.
 pub mod web;
 
 /// Clone-on-write value.
@@ -1059,7 +1088,7 @@ unsafe impl Send for TaskFuture {}
 /// # Examples
 ///
 /// ```
-/// use actuate::prelude::*;
+/// use actuate::ecs::prelude::*;
 /// use bevy::prelude::*;
 /// use serde::Deserialize;
 /// use std::collections::HashMap;
