@@ -18,7 +18,7 @@ use core::fmt;
 use hashbrown::HashMap;
 use slotmap::{DefaultKey, SlotMap};
 use std::{
-    cell::{Cell, RefCell},
+    cell::RefCell,
     collections::BTreeSet,
     mem, ptr,
     rc::Rc,
@@ -600,6 +600,8 @@ macro_rules! handler_methods {
             where
                 Self: Sized,
             {
+                // `Arc` so the observer closure stays `Clone + Send + Sync`.
+                let f = Arc::new(f);
                 self.observe(move |_: On<Pointer<$e>>| f())
             }
         )*
@@ -705,21 +707,22 @@ pub trait Modify<'a> {
     );
 
     /// Add an observer to this composable's bundle.
+    ///
+    /// `observer` must be [`Clone`] because a modifier is re-applied on every
+    /// re-compose. [`Spawn`] only installs observers on the initial spawn, so
+    /// the clones made by later re-composes are discarded.
     fn observe<F, E, B, Marker>(self, observer: F) -> Self
     where
         Self: Sized,
         F: SystemParamFunction<Marker, In = On<'static, 'static, E, B>, Out = ()>
+            + Clone
             + Send
             + Sync
             + 'a,
         E: EntityEvent,
         B: Bundle,
     {
-        let observer_cell = Cell::new(Some(observer));
-        self.modify(move |spawn| {
-            let observer = observer_cell.take().unwrap();
-            spawn.observe(observer)
-        })
+        self.modify(move |spawn| spawn.observe(observer.clone()))
     }
 
     handler_methods!(
