@@ -118,6 +118,8 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "typeid",
+ "wasm-bindgen",
+ "web-sys",
 ]
 
 [[package]]

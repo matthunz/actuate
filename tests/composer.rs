@@ -233,3 +233,68 @@ fn it_composes_memo() {
     assert_eq!(composer.try_compose(), Err(TryComposeError::Pending));
     assert_eq!(*x.borrow(), 1);
 }
+
+#[test]
+fn it_reports_readiness_after_applying_updates() {
+    #[derive(Data)]
+    struct Wrap {
+        x: Rc<Cell<i32>>,
+    }
+
+    impl Compose for Wrap {
+        fn compose(cx: Scope<Self>) -> impl Compose {
+            NonUpdateCounter {
+                x: cx.me().x.clone(),
+            }
+        }
+    }
+
+    let x = Rc::new(Cell::new(0));
+    let mut composer = Composer::new(Wrap { x: x.clone() });
+
+    // Nothing has been composed yet, so there is work to do.
+    assert!(composer.is_ready());
+
+    composer.try_compose().unwrap();
+    assert_eq!(x.get(), 1);
+
+    // The tree is quiescent: nothing pending, no tasks, no updates.
+    assert!(!composer.is_ready());
+    assert_eq!(composer.try_compose(), Err(TryComposeError::Pending));
+}
+
+#[test]
+fn it_is_ready_when_a_pending_update_queues_a_recompose() {
+    // An update is applied on the way *out* of a composition pass, and applying it
+    // queues a recomposition. So `try_compose` can report `Pending` while leaving work
+    // queued -- backends must use `is_ready`, not the poll result, to decide whether to
+    // schedule another pass.
+    #[derive(Data)]
+    struct Wrap {
+        x: Rc<Cell<i32>>,
+    }
+
+    impl Compose for Wrap {
+        fn compose(cx: Scope<Self>) -> impl Compose {
+            Counter {
+                x: cx.me().x.clone(),
+            }
+        }
+    }
+
+    let x = Rc::new(Cell::new(0));
+    let mut composer = Composer::new(Wrap { x: x.clone() });
+
+    composer.try_compose().unwrap();
+    assert_eq!(x.get(), 1);
+
+    // `Counter` calls `SignalMut::set` on every compose, so a recomposition is always
+    // queued by the time the pass finishes.
+    assert!(
+        composer.is_ready(),
+        "an applied update queued a recompose, so the composer must report ready"
+    );
+
+    composer.try_compose().unwrap();
+    assert_eq!(x.get(), 2);
+}

@@ -307,6 +307,24 @@ impl Composer {
         }
     }
 
+    /// Returns `true` if this composer has work ready to run.
+    ///
+    /// This is intended for backends that only drive the composer when there is something
+    /// to do, rather than on every frame.
+    ///
+    /// [`Composer::poll_compose`] returning [`Poll::Pending`] does *not* mean the composer
+    /// is idle: applying a queued update can itself queue a recomposition, and that happens
+    /// on the way out of a composition pass. Use this method to decide whether to schedule
+    /// another pass.
+    ///
+    /// Call this between passes; it borrows state that is mutably borrowed while composing.
+    pub fn is_ready(&self) -> bool {
+        self.is_initial
+            || !self.rt.pending.borrow().is_empty()
+            || !self.task_queue.is_empty()
+            || !self.update_queue.is_empty()
+    }
+
     /// Try to immediately compose the content in this composer.
     pub fn try_compose(&mut self) -> Result<(), TryComposeError> {
         let mut is_pending = true;
