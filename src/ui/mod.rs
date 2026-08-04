@@ -19,6 +19,9 @@ use std::mem;
 /// Material UI.
 pub mod material;
 
+mod text_input;
+pub use self::text_input::{TextInput, text_input};
+
 /// Create a scroll view.
 pub fn scroll_view<'a, C: Compose>(content: C) -> ScrollView<'a, C> {
     ScrollView {

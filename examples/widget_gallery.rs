@@ -10,6 +10,7 @@ struct WidgetGallery;
 impl Compose for WidgetGallery {
     fn compose(cx: Scope<Self>) -> impl Compose {
         let is_on = use_mut(&cx, || false);
+        let name = use_mut(&cx, String::new);
 
         material_ui((
             radio_button().is_enabled(*is_on),
@@ -19,6 +20,14 @@ impl Compose for WidgetGallery {
             // Disabled switches, shown in both states.
             switch().is_enabled(false),
             switch().is_checked(true).is_enabled(false),
+            text_input()
+                .value(&**name)
+                .placeholder("Name")
+                .max_characters(32)
+                .on_change(move |value| SignalMut::set(name, value))
+                .width(Val::Px(200.)),
+            // A disabled input can't be focused by pointer or by tab.
+            text_input().value("Disabled").is_enabled(false),
         ))
         .width(Val::Vw(100.))
     }

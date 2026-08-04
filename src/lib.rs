@@ -153,7 +153,7 @@ pub mod prelude {
 
     #[cfg(feature = "ui")]
     #[cfg_attr(docsrs, doc(cfg(feature = "ui")))]
-    pub use crate::ui::{ScrollView, scroll_view};
+    pub use crate::ui::{ScrollView, TextInput, scroll_view, text_input};
 
     #[cfg(feature = "material")]
     #[cfg_attr(docsrs, doc(cfg(feature = "material")))]
