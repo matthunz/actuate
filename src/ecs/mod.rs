@@ -81,18 +81,27 @@ struct RuntimeContext {
 
 impl RuntimeContext {
     fn current() -> Self {
-        RUNTIME_CONTEXT.with(|cell| {
-            let cell_ref = cell.borrow();
-            let Some(rt) = cell_ref.as_ref() else {
-                panic!("Must be called from within a composable.")
-            };
-            rt.clone()
-        })
+        Self::try_current().expect("Must be called from within a composable.")
+    }
+
+    fn try_current() -> Option<Self> {
+        RUNTIME_CONTEXT.with(|cell| cell.borrow().clone())
     }
 
     unsafe fn world_mut(&self) -> &'static mut World {
         // Safety: the caller guarantees unique access to the world for `'static`.
-        unsafe { &mut *self.inner.borrow().world_ptr }
+        unsafe { self.try_world_mut() }.expect("Must be called during a composition.")
+    }
+
+    /// Get the world, if a composition is currently running.
+    ///
+    /// The world is only borrowed for the duration of [`compose`], so this is `None` when
+    /// called outside of one, such as while the world itself is being dropped.
+    unsafe fn try_world_mut(&self) -> Option<&'static mut World> {
+        let world_ptr = self.inner.borrow().world_ptr;
+
+        // Safety: the caller guarantees unique access to the world for `'static`.
+        (!world_ptr.is_null()).then(|| unsafe { &mut *world_ptr })
     }
 }
 
@@ -256,6 +265,10 @@ fn compose(world: &mut World) {
         // TODO handle composition error.
         let _ = rt_composer.composer.poll_compose(&mut cx);
     }
+
+    // The world is only borrowed for the duration of this system. Composables dropped
+    // afterwards (such as when the world itself is dropped) must not access it.
+    rt_cx.inner.borrow_mut().world_ptr = ptr::null_mut();
 }
 
 /// A function that takes a [`SystemParam`] as input.
@@ -538,8 +551,14 @@ fn use_bundle_inner(
     }
 
     use_drop(cx, move || {
-        let world = unsafe { RuntimeContext::current().world_mut() };
-        world.try_despawn(entity).ok();
+        // Skip when there's no world to despawn from, such as when this composition is
+        // being dropped along with the world itself.
+        if let Some(world) = RuntimeContext::try_current()
+            // Safety: composables are only dropped with unique access to the world.
+            .and_then(|rt_cx| unsafe { rt_cx.try_world_mut() })
+        {
+            world.try_despawn(entity).ok();
+        }
     });
 
     entity

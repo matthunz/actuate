@@ -177,3 +177,15 @@ fn it_only_calls_on_spawn_once() {
         counts.inserts
     );
 }
+
+/// Composables are dropped along with the world, and must not reach back into it while
+/// it's being torn down.
+#[test]
+fn it_can_be_dropped_with_the_world() {
+    let mut app = setup(true);
+
+    let entity = player(&mut app);
+    assert!(app.world().entity(entity).contains::<Inventory>());
+
+    drop(app);
+}
