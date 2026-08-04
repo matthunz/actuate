@@ -3,7 +3,7 @@ use crate::{
     Scope, Signal, compose::Compose, composer::Runtime, data::Data, use_context, use_drop,
     use_provider, use_ref,
 };
-use bevy_ecs::{entity::Entity, prelude::*, world::World};
+use bevy_ecs::{component::ComponentId, entity::Entity, prelude::*, world::World};
 use std::{
     cell::{Cell, RefCell},
     collections::BTreeSet,
@@ -15,6 +15,10 @@ use std::{
 /// Create a [`Spawn`] composable that spawns the provided `bundle` when composed.
 ///
 /// On re-composition, the spawned entity is updated to the latest provided value.
+/// Components of the previous bundle that are missing from the new one are removed,
+/// so conditionally-included components disappear from the entity when they're no
+/// longer composed. Only components this composable inserted itself are removed,
+/// leaving those added by other systems (or other composables) untouched.
 ///
 /// # Examples
 ///
@@ -40,11 +44,27 @@ where
     B: Bundle + Clone,
 {
     Spawn {
-        spawn_fn: Rc::new(move |world, cell| {
+        spawn_fn: Rc::new(move |world, cell, last_ids| {
             if let Some(entity) = cell {
                 world.entity_mut(*entity).insert(bundle.clone());
+
+                // Inserting the bundle registered every component, so these are all `Some`.
+                let ids: Vec<_> = B::get_component_ids(world.components()).flatten().collect();
+
+                let removed: Vec<_> = last_ids
+                    .iter()
+                    .copied()
+                    .filter(|id| !ids.contains(id))
+                    .collect();
+                if !removed.is_empty() {
+                    world.entity_mut(*entity).remove_by_ids(&removed);
+                }
+
+                *last_ids = ids;
             } else {
-                *cell = Some(world.spawn(bundle.clone()).id())
+                *cell = Some(world.spawn(bundle.clone()).id());
+
+                *last_ids = B::get_component_ids(world.components()).flatten().collect();
             }
         }),
         content: (),
@@ -56,7 +76,8 @@ where
     }
 }
 
-type SpawnFn = Rc<dyn Fn(&mut World, &mut Option<Entity>)>;
+/// Spawns or updates an entity, tracking the [`ComponentId`]s of the last bundle it inserted.
+type SpawnFn = Rc<dyn Fn(&mut World, &mut Option<Entity>, &mut Vec<ComponentId>)>;
 
 type ObserverFn<'a> = Rc<dyn Fn(&mut EntityWorldMut) + 'a>;
 
@@ -101,7 +122,7 @@ impl<'a, C> Spawn<'a, C> {
 
     /// Add a function to be called when this bundle is initially spawned.
     pub fn on_spawn(mut self, f: impl Fn(EntityWorldMut) + 'a) -> Self {
-        self.on_insert.push(Rc::new(f));
+        self.on_spawn.push(Rc::new(f));
         self
     }
 
@@ -166,6 +187,7 @@ impl<C: Compose> Compose for Spawn<'_, C> {
         let spawn_cx = use_context::<SpawnContext>(&cx);
 
         let is_initial = use_ref(&cx, || Cell::new(true));
+        let last_ids = use_ref(&cx, || RefCell::new(Vec::new()));
         let entity = use_bundle_inner(&cx, |world, entity| {
             if let Some(target) = cx.me().target {
                 *entity = Some(target);
@@ -178,7 +200,7 @@ impl<C: Compose> Compose for Spawn<'_, C> {
                 return;
             }
 
-            (cx.me().spawn_fn)(world, entity);
+            (cx.me().spawn_fn)(world, entity, &mut last_ids.borrow_mut());
 
             for f in &cx.me().on_insert {
                 f(world.entity_mut(entity.unwrap()));

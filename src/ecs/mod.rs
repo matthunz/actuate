@@ -237,13 +237,20 @@ fn compose(world: &mut World) {
     rt.commands.borrow_mut().apply(world);
     drop(rt);
 
-    let proxy = (*world.get_resource::<EventLoopProxyWrapper>().unwrap()).clone();
+    // Without an event loop (such as in a headless app), wakers can't request a redraw.
+    let proxy = world
+        .get_resource::<EventLoopProxyWrapper>()
+        .map(|proxy| (*proxy).clone());
+
     let rt = &mut *world.non_send_mut::<Runtime>();
     let mut composers = rt.composers.borrow_mut();
     for rt_composer in composers.values_mut() {
-        let waker = Waker::from(Arc::new(RuntimeWaker {
-            proxy: proxy.clone(),
-        }));
+        let waker = match &proxy {
+            Some(proxy) => Waker::from(Arc::new(RuntimeWaker {
+                proxy: proxy.clone(),
+            })),
+            None => futures::task::noop_waker(),
+        };
         let mut cx = Context::from_waker(&waker);
 
         // TODO handle composition error.
