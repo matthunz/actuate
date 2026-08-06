@@ -19,7 +19,7 @@ pub use self::ui::{MaterialUi, material_ui};
 /// Text composables.
 pub mod text;
 
-/// Colors for a [`MaterialTheme`].
+/// Colors for a [`Theme`].
 #[derive(Clone, PartialEq)]
 pub struct Colors {
     /// Background color.
@@ -117,7 +117,7 @@ pub enum TypographyKind {
     Title,
 }
 
-/// Typography for a [`MaterialTheme`].
+/// Typography for a [`Theme`].
 #[derive(Clone, PartialEq)]
 pub struct Typography {
     /// Body typography.

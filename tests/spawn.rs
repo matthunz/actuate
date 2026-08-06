@@ -2,7 +2,7 @@
 // Bevy's `App` isn't supported under Miri.
 #![cfg(all(feature = "ecs", not(miri)))]
 
-use actuate::prelude::*;
+use actuate::ecs::prelude::*;
 use bevy::prelude::*;
 
 /// State driving the composition from outside the composer.

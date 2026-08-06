@@ -23,7 +23,7 @@ use std::{
 /// # Examples
 ///
 /// ```no_run
-/// use actuate::prelude::*;
+/// use actuate::ecs::prelude::*;
 /// use bevy::prelude::*;
 ///
 /// #[derive(Data)]

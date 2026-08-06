@@ -2,7 +2,7 @@
 // Bevy's `App` isn't supported under Miri.
 #![cfg(all(feature = "ui", not(miri)))]
 
-use actuate::prelude::*;
+use actuate::ecs::prelude::*;
 use bevy::{
     input_focus::tab_navigation::TabIndex,
     prelude::*,

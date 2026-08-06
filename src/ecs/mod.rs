@@ -1,3 +1,14 @@
+//! Bevy ECS integration.
+//!
+//! [`ActuatePlugin`] drives a [`Composer`] per Bevy `Update`, and [`Spawn`] attaches an
+//! entity to its parent composable's entity, keeping siblings in composition order.
+//!
+//! Everything this backend provides is re-exported from [`prelude`]:
+//!
+//! ```ignore
+//! use actuate::ecs::prelude::*;
+//! ```
+
 use crate::{
     Cow, Scope, ScopeState, Signal,
     compose::Compose,
@@ -31,6 +42,48 @@ use bevy_ui::prelude::*;
 
 #[cfg(feature = "picking")]
 use bevy_picking::prelude::*;
+
+/// Prelude for the Bevy ECS backend.
+///
+/// This re-exports the core [prelude](crate::prelude) alongside everything this backend
+/// provides, so a Bevy app needs only:
+///
+/// ```ignore
+/// use actuate::ecs::prelude::*;
+/// ```
+pub mod prelude {
+    pub use crate::prelude::*;
+
+    pub use super::{
+        ActuatePlugin, Composition, Modifier, Modify, Spawn, UseCommands, spawn, use_bundle,
+        use_commands, use_world, use_world_once,
+    };
+
+    #[cfg(feature = "animation")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "animation")))]
+    pub use super::animation::{UseAnimated, use_animated};
+
+    #[cfg(feature = "ui")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "ui")))]
+    pub use super::ui::{ScrollView, TextInput, scroll_view, text_input};
+
+    #[cfg(feature = "material")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "material")))]
+    pub use super::ui::material::{
+        Button, MaterialUi, RadioButton, Switch, Theme, TypographyKind, TypographyStyleKind,
+        button, container, material_ui, radio_button, switch, text,
+    };
+}
+
+#[cfg(feature = "animation")]
+#[cfg_attr(docsrs, doc(cfg(feature = "animation")))]
+/// Animation hooks.
+pub mod animation;
+
+#[cfg(feature = "ui")]
+#[cfg_attr(docsrs, doc(cfg(feature = "ui")))]
+/// User interface components.
+pub mod ui;
 
 mod spawn;
 pub use self::spawn::{Spawn, spawn};
@@ -380,7 +433,7 @@ impl_trait_for_tuples!(impl_system_param_fn);
 /// # Examples
 ///
 /// ```no_run
-/// use actuate::prelude::*;
+/// use actuate::ecs::prelude::*;
 /// use bevy::prelude::*;
 ///
 /// // Timer composable.

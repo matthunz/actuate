@@ -7,14 +7,17 @@ description = "A reactive user-interface framework"
 repository = "https://github.com/actuate-rs/actuate"
 
 [features]
-animation = ["ecs", "dep:bevy_math", "dep:bevy_time", "dep:tokio"]
-ecs = ["std", "dep:bevy_app", "dep:bevy_ecs", "dep:bevy_utils", "dep:bevy_winit"]
-executor = ["std", "dep:tokio"]
-material = ["ui"]
-picking = ["dep:bevy_picking"]
-rt = ["executor", "tokio/rt-multi-thread"]
+# Core
 std = []
+executor = ["std", "dep:tokio"]
+rt = ["executor", "tokio/rt-multi-thread"]
 tracing = ["dep:tracing"]
+
+# Bevy ECS backend
+ecs = ["std", "dep:bevy_app", "dep:bevy_ecs", "dep:bevy_utils", "dep:bevy_winit"]
+animation = ["ecs", "dep:bevy_math", "dep:bevy_time", "dep:tokio"]
+material = ["ui"]
+picking = ["ecs", "dep:bevy_picking"]
 ui = [
     "ecs",
     "picking",
@@ -24,7 +27,10 @@ ui = [
     "dep:bevy_text",
     "dep:bevy_ui",
 ]
+
+# Web (DOM) backend
 web = ["std", "dep:wasm-bindgen", "dep:web-sys"]
+
 full = ["animation", "ecs", "material", "rt", "tracing"]
 default = ["std"]
 

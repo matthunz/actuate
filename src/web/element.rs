@@ -25,7 +25,7 @@ type EventClosure = Closure<dyn FnMut(web_sys::Event)>;
 /// # Examples
 ///
 /// ```ignore
-/// use actuate::prelude::*;
+/// use actuate::web::prelude::*;
 ///
 /// #[derive(Data)]
 /// struct Greeting {
@@ -211,7 +211,7 @@ impl<C: Compose> Compose for Element<'_, C> {
 /// # Examples
 ///
 /// ```ignore
-/// use actuate::prelude::*;
+/// use actuate::web::prelude::*;
 ///
 /// let content = text("Hello, World!");
 /// ```

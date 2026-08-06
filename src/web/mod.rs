@@ -5,19 +5,10 @@
 //! its parent the way `Spawn` attaches an entity, including the sibling-ordering rules
 //! that keep children in composition order.
 //!
-//! Because this module and the `material` module both define `text`, `button` and
-//! `Composition`, the web items are not re-exported from [`crate::prelude`]. Import them
-//! from here instead:
+//! Everything this backend provides is re-exported from [`prelude`]:
 //!
 //! ```ignore
-//! use actuate::{prelude::*, web::*};
-//! ```
-//!
-//! If the `material` feature is also enabled, import the web items by name so they take
-//! precedence over the glob:
-//!
-//! ```ignore
-//! use actuate::{prelude::*, web::{button, div, text}};
+//! use actuate::web::prelude::*;
 //! ```
 //!
 //! # Async tasks
@@ -42,6 +33,23 @@ use slotmap::{DefaultKey, SlotMap};
 use std::collections::BTreeSet;
 use wasm_bindgen::prelude::*;
 use web_sys::{Document, Node};
+
+/// Prelude for the web (DOM) backend.
+///
+/// This re-exports the core [prelude](crate::prelude) alongside everything this backend
+/// provides, so a web app needs only:
+///
+/// ```ignore
+/// use actuate::web::prelude::*;
+/// ```
+pub mod prelude {
+    pub use crate::prelude::*;
+
+    pub use super::{
+        Composition, Element, Text, a, button, div, element, h1, h2, h3, input, li, mount,
+        mount_to_body, p, span, text, ul, use_document,
+    };
+}
 
 mod element;
 pub use self::element::{
@@ -82,7 +90,7 @@ thread_local! {
 /// # Examples
 ///
 /// ```ignore
-/// use actuate::prelude::*;
+/// use actuate::web::prelude::*;
 ///
 /// #[derive(Data)]
 /// struct Title;
@@ -295,7 +303,7 @@ impl Drop for Composition {
 /// # Examples
 ///
 /// ```ignore
-/// use actuate::prelude::*;
+/// use actuate::web::prelude::*;
 ///
 /// #[derive(Data)]
 /// struct App;

@@ -9,9 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Breaking changes
 
+- The `ecs` and `web` backends are now peers, each owning its own prelude. `actuate::prelude`
+  holds only the backend-neutral core; import `actuate::ecs::prelude::*` or
+  `actuate::web::prelude::*` instead. Since each backend's `Composition`, `text` and `button`
+  now live in their own prelude, the web items no longer have to be imported by name to win
+  against `material`.
+- The Bevy-only modules moved under `ecs`: `actuate::ui` is now `actuate::ecs::ui`,
+  `actuate::ui::material` is now `actuate::ecs::ui::material`, and `actuate::animation` is now
+  `actuate::ecs::animation`. Feature names are unchanged.
 - The `ui` feature now enables `ecs` and `picking`, and pulls in `bevy_color`, `bevy_input`,
   `bevy_input_focus`, and `bevy_text`. It previously only enabled `bevy_ui`, which wasn't enough
-  to build `src/ui` on its own.
+  to build `src/ecs/ui` on its own.
+- The `picking` feature now enables `ecs`. It gates code inside the `ecs` module, so enabling it
+  alone never built.
 
 ## Features
 
