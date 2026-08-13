@@ -1,6 +1,6 @@
 use crate::{
     Scope, Signal, SignalMut,
-    ecs::{Modifier, Modify, spawn, use_world},
+    desktop::{Modifier, Modify, spawn, use_world},
     prelude::Compose,
     use_mut,
 };

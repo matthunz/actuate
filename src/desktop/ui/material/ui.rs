@@ -1,7 +1,7 @@
 use super::Theme;
 use crate::{
     Scope, Signal,
-    ecs::{Modifier, Modify, spawn},
+    desktop::{Modifier, Modify, spawn},
     prelude::Compose,
     use_provider,
 };

@@ -1,6 +1,6 @@
 // Widget gallery UI example.
 
-use actuate::ecs::prelude::*;
+use actuate::desktop::prelude::*;
 use bevy::prelude::*;
 
 // Widget gallery composable.

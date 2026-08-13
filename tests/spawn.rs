@@ -1,8 +1,8 @@
 //! Tests for the entity and component lifecycle of the `spawn` composable.
 // Bevy's `App` isn't supported under Miri.
-#![cfg(all(feature = "ecs", not(miri)))]
+#![cfg(all(feature = "desktop", not(miri)))]
 
-use actuate::ecs::prelude::*;
+use actuate::desktop::prelude::*;
 use bevy::prelude::*;
 
 /// State driving the composition from outside the composer.

@@ -2,8 +2,8 @@ use super::Theme;
 use crate::{
     Data, Scope, SignalMut,
     compose::Compose,
-    ecs::spawn,
-    ecs::{Modifier, Modify},
+    desktop::spawn,
+    desktop::{Modifier, Modify},
     use_context, use_mut,
 };
 use bevy_color::{Alpha, Color};

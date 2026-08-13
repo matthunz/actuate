@@ -1,4 +1,4 @@
-//! Bevy ECS integration.
+//! Desktop (Bevy ECS) integration.
 //!
 //! [`ActuatePlugin`] drives a [`Composer`] per Bevy `Update`, and [`Spawn`] attaches an
 //! entity to its parent composable's entity, keeping siblings in composition order.
@@ -6,7 +6,7 @@
 //! Everything this backend provides is re-exported from [`prelude`]:
 //!
 //! ```ignore
-//! use actuate::ecs::prelude::*;
+//! use actuate::desktop::prelude::*;
 //! ```
 
 use crate::{
@@ -43,13 +43,13 @@ use bevy_ui::prelude::*;
 #[cfg(feature = "picking")]
 use bevy_picking::prelude::*;
 
-/// Prelude for the Bevy ECS backend.
+/// Prelude for the desktop (Bevy ECS) backend.
 ///
 /// This re-exports the core [prelude](crate::prelude) alongside everything this backend
 /// provides, so a Bevy app needs only:
 ///
 /// ```ignore
-/// use actuate::ecs::prelude::*;
+/// use actuate::desktop::prelude::*;
 /// ```
 pub mod prelude {
     pub use crate::prelude::*;
@@ -433,7 +433,7 @@ impl_trait_for_tuples!(impl_system_param_fn);
 /// # Examples
 ///
 /// ```no_run
-/// use actuate::ecs::prelude::*;
+/// use actuate::desktop::prelude::*;
 /// use bevy::prelude::*;
 ///
 /// // Timer composable.

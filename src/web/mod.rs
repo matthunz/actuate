@@ -1,6 +1,6 @@
 //! Web (DOM) integration.
 //!
-//! This backend mirrors the ECS backend: [`mount`] drives a [`Composer`] the way
+//! This backend mirrors the desktop backend: [`mount`] drives a [`Composer`] the way
 //! `ActuatePlugin` drives one per Bevy `Update`, and [`Element`] attaches a DOM node to
 //! its parent the way `Spawn` attaches an entity, including the sibling-ordering rules
 //! that keep children in composition order.
@@ -58,7 +58,7 @@ pub use self::element::{
 
 /// Web runtime context.
 ///
-/// This mirrors the ECS backend's runtime context, caching the handles that
+/// This mirrors the desktop backend's runtime context, caching the handles that
 /// composables need rather than re-fetching them from JS on every compose.
 #[derive(Clone)]
 struct RuntimeContext {
@@ -110,7 +110,7 @@ pub fn use_document(cx: ScopeState<'_>) -> &Document {
 ///
 /// `keys` tracks the tree positions of the children attached to `parent`, so that
 /// siblings are inserted in composition order even though they may compose out of order.
-/// This mirrors `SpawnContext` in the ECS backend.
+/// This mirrors `SpawnContext` in the desktop backend.
 struct NodeContext {
     parent: Node,
     keys: RefCell<BTreeSet<Pending>>,
@@ -177,7 +177,7 @@ where
 
 /// Root composable, providing the mount point to its children.
 ///
-/// This mirrors `CompositionContent` in the ECS backend.
+/// This mirrors `CompositionContent` in the desktop backend.
 #[derive(Data)]
 #[actuate(path = "crate")]
 struct Root<C> {

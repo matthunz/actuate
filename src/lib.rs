@@ -14,7 +14,7 @@
 //! a [`compose`](Compose::compose) method, and the [`composer`] drives it. A *backend* is what
 //! those composables ultimately render into. Actuate ships two, as peers:
 //!
-//! - [`ecs`] — the [Bevy](https://crates.io/crates/bevy) ECS, for scenes and UI.
+//! - [`desktop`] — the [Bevy](https://crates.io/crates/bevy) ECS, for scenes and UI.
 //! - [`web`] — the DOM, for the browser.
 //!
 //! ## Backends
@@ -23,7 +23,7 @@
 //!
 //! ### Bevy
 //! ```ignore
-//! use actuate::ecs::prelude::*;
+//! use actuate::desktop::prelude::*;
 //! use bevy::prelude::*;
 //!
 //! // Counter composable.
@@ -141,15 +141,15 @@
 //!   (enables the `executor` feature).
 //! - `tracing`: Enables the logging through the `tracing` crate.
 //!
-//! ### Bevy ECS backend
-//! - `ecs`: Enables the [`ecs`] module for bindings to the [Bevy](https://crates.io/crates/bevy) ECS.
-//! - `animation`: Enables the [`ecs::animation`] module for animating values from the Bevy ECS
-//!   (enables the `ecs` feature).
-//! - `material`: Enables the [`ecs::ui::material`] module for Material UI (enables the `ui` feature).
-//! - `picking`: Enables support for picking event handlers with [`ecs::Modify`]
-//!   (enables the `ecs` feature).
-//! - `ui`: Enables the [`ecs::ui`] module for user interface components
-//!   (enables the `ecs` and `picking` features).
+//! ### Desktop (Bevy ECS) backend
+//! - `desktop`: Enables the [`desktop`] module for bindings to the [Bevy](https://crates.io/crates/bevy) ECS.
+//! - `animation`: Enables the [`desktop::animation`] module for animating values from the Bevy ECS
+//!   (enables the `desktop` feature).
+//! - `material`: Enables the [`desktop::ui::material`] module for Material UI (enables the `ui` feature).
+//! - `picking`: Enables support for picking event handlers with [`desktop::Modify`]
+//!   (enables the `desktop` feature).
+//! - `ui`: Enables the [`desktop::ui`] module for user interface components
+//!   (enables the `desktop` and `picking` features).
 //! - `full`: Enables every core and Bevy feature above.
 //!
 //! ### Web backend
@@ -187,7 +187,7 @@ use std::collections::HashMap;
 /// re-exports this one alongside its own items, so an app imports exactly one of:
 ///
 /// ```ignore
-/// use actuate::ecs::prelude::*;
+/// use actuate::desktop::prelude::*;
 /// use actuate::web::prelude::*;
 /// ```
 pub mod prelude {
@@ -221,9 +221,9 @@ use crate::data::Data;
 /// Task execution context.
 pub mod executor;
 
-#[cfg(feature = "ecs")]
-#[cfg_attr(docsrs, doc(cfg(feature = "ecs")))]
-pub mod ecs;
+#[cfg(feature = "desktop")]
+#[cfg_attr(docsrs, doc(cfg(feature = "desktop")))]
+pub mod desktop;
 
 #[cfg(feature = "web")]
 #[cfg_attr(docsrs, doc(cfg(feature = "web")))]
@@ -1088,7 +1088,7 @@ unsafe impl Send for TaskFuture {}
 /// # Examples
 ///
 /// ```
-/// use actuate::ecs::prelude::*;
+/// use actuate::desktop::prelude::*;
 /// use bevy::prelude::*;
 /// use serde::Deserialize;
 /// use std::collections::HashMap;
