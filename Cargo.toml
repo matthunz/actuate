@@ -13,13 +13,13 @@ executor = ["std", "dep:tokio"]
 rt = ["executor", "tokio/rt-multi-thread"]
 tracing = ["dep:tracing"]
 
-# Bevy ECS backend
-ecs = ["std", "dep:bevy_app", "dep:bevy_ecs", "dep:bevy_utils", "dep:bevy_winit"]
-animation = ["ecs", "dep:bevy_math", "dep:bevy_time", "dep:tokio"]
+# Desktop (Bevy ECS) backend
+desktop = ["std", "dep:bevy_app", "dep:bevy_ecs", "dep:bevy_utils", "dep:bevy_winit"]
+animation = ["desktop", "dep:bevy_math", "dep:bevy_time", "dep:tokio"]
 material = ["ui"]
-picking = ["ecs", "dep:bevy_picking"]
+picking = ["desktop", "dep:bevy_picking"]
 ui = [
-    "ecs",
+    "desktop",
     "picking",
     "dep:bevy_color",
     "dep:bevy_input",
@@ -31,7 +31,7 @@ ui = [
 # Web (DOM) backend
 web = ["std", "dep:wasm-bindgen", "dep:web-sys"]
 
-full = ["animation", "ecs", "material", "rt", "tracing"]
+full = ["animation", "desktop", "material", "rt", "tracing"]
 default = ["std"]
 
 [workspace]
@@ -103,7 +103,7 @@ required-features = ["material"]
 
 [[example]]
 name = "timer"
-required-features = ["ecs"]
+required-features = ["desktop"]
 
 [[example]]
 name = "web"

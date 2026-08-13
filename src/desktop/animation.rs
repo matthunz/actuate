@@ -1,7 +1,7 @@
 use crate::{
     ScopeState, Signal, SignalMut,
     data::Data,
-    ecs::{use_world, use_world_once},
+    desktop::{use_world, use_world_once},
     use_local_task, use_mut, use_ref,
 };
 use bevy_ecs::prelude::*;
