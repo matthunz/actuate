@@ -104,11 +104,9 @@ impl Compose for Middle {
                 None
             },
             span(text("last")),
-            button(text("toggle"))
-                .id("toggle")
-                .on("click", move |_| {
-                    SignalMut::update(is_shown, |is_shown| *is_shown = !*is_shown)
-                }),
+            button(text("toggle")).id("toggle").on("click", move |_| {
+                SignalMut::update(is_shown, |is_shown| *is_shown = !*is_shown)
+            }),
         )
     }
 }
@@ -227,7 +225,10 @@ async fn it_updates_text_in_place() {
     settle().await;
 
     let text_node = parent.query_selector("p").unwrap().unwrap().first_child();
-    assert_eq!(parent.query_selector("p").unwrap().unwrap().text_content(), Some("count: 0".into()));
+    assert_eq!(
+        parent.query_selector("p").unwrap().unwrap().text_content(),
+        Some("count: 0".into())
+    );
 
     click(&parent, "#up");
     settle().await;
@@ -237,11 +238,14 @@ async fn it_updates_text_in_place() {
         Some("count: 1".into())
     );
     assert!(
-        text_node
-            .as_ref()
-            .is_some_and(|node| node.is_same_node(
-                parent.query_selector("p").unwrap().unwrap().first_child().as_ref()
-            )),
+        text_node.as_ref().is_some_and(|node| node.is_same_node(
+            parent
+                .query_selector("p")
+                .unwrap()
+                .unwrap()
+                .first_child()
+                .as_ref()
+        )),
         "the text node should be updated, not replaced"
     );
 }
