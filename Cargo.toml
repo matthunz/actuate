@@ -1,7 +1,8 @@
 [package]
 name = "actuate"
-version = "0.22.0"
+version = "0.23.0"
 edition = "2024"
+rust-version = "1.85"
 license = "MIT OR Apache-2.0"
 description = "A reactive user-interface framework"
 repository = "https://github.com/actuate-rs/actuate"
@@ -56,10 +57,9 @@ bevy_ui = { version = "0.19.0", optional = true }
 bevy_utils = { version = "0.19.0", optional = true }
 bevy_winit = { version = "0.19.0", optional = true }
 crossbeam-queue = { version = "0.3.11", default-features = false, features = ["alloc"] }
-futures = "0.3.31"
 hashbrown = "0.15.2"
-slotmap = "1.0.7"
-thiserror = "2.0.3"
+slotmap = { version = "1.0.7", default-features = false }
+thiserror = { version = "2.0.3", default-features = false }
 tracing = { version = "0.1.40", optional = true }
 tokio = { version = "1.41.1", features = ["sync"], optional = true }
 typeid = "1.0.2"
@@ -83,6 +83,12 @@ bevy = { version = "0.19.0" }
 reqwest = { version = "0.12.9", features = ["json"] }
 serde = { version = "1.0.215", features = ["derive"] }
 tracing-subscriber = "0.3.18"
+
+# The web backend's tests drive a real DOM, so they only build for wasm.
+[target.'cfg(target_arch = "wasm32")'.dev-dependencies]
+js-sys = "0.3.72"
+wasm-bindgen-futures = "0.4.45"
+wasm-bindgen-test = "0.3.45"
 
 [package.metadata.docs.rs]
 all-features = true

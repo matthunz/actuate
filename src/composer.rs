@@ -60,7 +60,7 @@ impl AnyCompose for ComposePtr {
         }
     }
 
-    fn name(&self) -> Option<std::borrow::Cow<'static, str>> {
+    fn name(&self) -> Option<alloc::borrow::Cow<'static, str>> {
         match self {
             ComposePtr::Boxed(compose) => compose.name(),
             ComposePtr::Ptr(ptr) => unsafe { (**ptr).name() },
@@ -355,7 +355,7 @@ impl Composer {
 
     /// Compose the content of this composer.
     pub async fn compose(&mut self) -> Result<(), Box<dyn Error>> {
-        futures::future::poll_fn(|cx| self.poll_compose(cx)).await
+        core::future::poll_fn(|cx| self.poll_compose(cx)).await
     }
 }
 
