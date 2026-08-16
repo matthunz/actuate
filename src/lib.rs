@@ -135,7 +135,8 @@
 //!
 //! ## Features
 //! ### Core
-//! - `std`: Enables features that use Rust's standard library (default). With this feature disabled Actuate can be used in `#![no_std]` environments.
+//! - `std`: Enables features that use Rust's standard library (default). Every backend
+//!   requires it; disabling it leaves only the core composer.
 //! - `executor`: Enables the [`executor`] module for multi-threaded tasks.
 //! - `rt`: Enables support for the [Tokio](https://crates.io/crates/tokio) runtime with the Executor trait.
 //!   (enables the `executor` feature).
@@ -405,7 +406,7 @@ impl<C: Compose> Compose for MapUnchecked<'_, C> {
         unsafe { (*cx.me().map).any_compose(cx.state) }
     }
 
-    fn name() -> Option<std::borrow::Cow<'static, str>> {
+    fn name() -> Option<alloc::borrow::Cow<'static, str>> {
         C::name()
     }
 }

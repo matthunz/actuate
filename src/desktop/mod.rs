@@ -311,7 +311,7 @@ fn compose(world: &mut World) {
             Some(proxy) => Waker::from(Arc::new(RuntimeWaker {
                 proxy: proxy.clone(),
             })),
-            None => futures::task::noop_waker(),
+            None => Waker::noop().clone(),
         };
         let mut cx = Context::from_waker(&waker);
 
